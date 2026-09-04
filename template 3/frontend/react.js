@@ -1338,15 +1338,11 @@ function App() {
     <div className="app-shell">
       <header className="site-header">
         <div className="container nav-row">
-          <a className="brand" href="#top" onClick={() => setActiveView("gallery")}>
+          <a className="brand" href="#top" onClick={() => navigateTo("gallery")}>
             <span className="brand-mark">C</span>
             <span className="brand-name">Chico's <span>Colors</span></span>
           </a>
 
-          <nav className="nav-links" aria-label="Main nav">
-            <button type="button" className={`nav-link-btn ${activeView === "gallery" ? "active" : ""}`} onClick={() => setActiveView("gallery")}>Home</button>
-            <button type="button" className={`nav-link-btn ${activeView === "palettes" ? "active" : ""}`} onClick={() => setActiveView("palettes")}>Palettes</button>
-            <button type="button" className={`nav-link-btn ${activeView === "builder" ? "active" : ""}`} onClick={() => setActiveView("builder")}>Harmony Builder</button>
             <button type="button" className={`nav-link-btn ${activeView === "extract" ? "active" : ""}`} onClick={() => setActiveView("extract")}>Extract from Image</button>
             <button type="button" className={`nav-link-btn ${activeView === "assistant" ? "active" : ""}`} onClick={() => setActiveView("assistant")}>AI Assistant</button>
           </nav>
