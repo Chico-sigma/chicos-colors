@@ -1,5 +1,8 @@
 require("dotenv").config();
-
+const allowedOrigins = (process.env.CLIENT_ORIGIN || "http://localhost:3000")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 const express = require("express");
 const cors = require("cors");
 const { GoogleGenAI, Type } = require("@google/genai");
