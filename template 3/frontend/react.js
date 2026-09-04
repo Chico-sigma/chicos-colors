@@ -875,6 +875,7 @@ function AuthModal({ onClose, onAuthenticated }) {
 
 function App() {
   const [activeView, setActiveView] = useState("gallery");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [galleryQuery, setGalleryQuery] = useState("");
   const [paletteQuery, setPaletteQuery] = useState("");
   const [paletteCategory, setPaletteCategory] = useState("All");
@@ -903,6 +904,11 @@ function App() {
   const [authToken, setAuthToken] = useState(() => localStorage.getItem(AUTH_TOKEN_KEY) || "");
   const [currentUser, setCurrentUser] = useState(() => readStored(AUTH_USER_KEY, null));
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  function navigateTo(view) {
+    setActiveView(view);
+    setIsMenuOpen(false);
+  }
 
   useEffect(() => {
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(favoriteColorIds));
@@ -1343,8 +1349,24 @@ function App() {
             <span className="brand-name">Chico's <span>Colors</span></span>
           </a>
 
-            <button type="button" className={`nav-link-btn ${activeView === "extract" ? "active" : ""}`} onClick={() => setActiveView("extract")}>Extract from Image</button>
-            <button type="button" className={`nav-link-btn ${activeView === "assistant" ? "active" : ""}`} onClick={() => setActiveView("assistant")}>AI Assistant</button>
+          <div className="header-actions">
+            <label className="header-search">
+              <span aria-hidden="true">⌕</span>
+              <input type="search" value={galleryQuery} onChange={(event) => setGalleryQuery(event.target.value)} placeholder="Search" aria-label="Search colors" />
+            </label>
+            <button type="button" className="cart-btn" aria-label="Color cart" title="Color cart">&#128722;<span>0</span></button>
+            <button type="button" className="menu-toggle" aria-expanded={isMenuOpen} aria-controls="main-navigation" onClick={() => setIsMenuOpen((isOpen) => !isOpen)}>
+              <span className="menu-toggle-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span className="sr-only">Menu</span>
+            </button>
+          </div>
+
+          <nav id="main-navigation" className={`nav-links ${isMenuOpen ? "is-open" : ""}`} aria-label="Main nav">
+            <button type="button" className={`nav-link-btn ${activeView === "gallery" ? "active" : ""}`} onClick={() => navigateTo("gallery")}>Home</button>
+            <button type="button" className={`nav-link-btn ${activeView === "palettes" ? "active" : ""}`} onClick={() => navigateTo("palettes")}>Palettes</button>
+            <button type="button" className={`nav-link-btn ${activeView === "builder" ? "active" : ""}`} onClick={() => navigateTo("builder")}>Harmony Builder</button>
+            <button type="button" className={`nav-link-btn ${activeView === "extract" ? "active" : ""}`} onClick={() => navigateTo("extract")}>Extract from Image</button>
+            <button type="button" className={`nav-link-btn ${activeView === "assistant" ? "active" : ""}`} onClick={() => navigateTo("assistant")}>AI Assistant</button>
           </nav>
           {currentUser ? (
             <button type="button" className="account-btn" onClick={handleLogout} title="Sign out">{currentUser.name} · Sign out</button>
