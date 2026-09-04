@@ -530,7 +530,7 @@ const CUSTOM_FAVORITES_KEY = "chicos-custom-favorites";
 const CUSTOM_PALETTE_FAVORITES_KEY = "chicos-custom-palette-favorites";
 const AUTH_TOKEN_KEY = "chicos-auth-token";
 const AUTH_USER_KEY = "chicos-auth-user";
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://chicos-colors-api.vercel.app";
 const CITY_PALETTES = [
   { id: "chefchaouen", name: "Chefchaouen Blues", region: "Chefchaouen", context: "Blue-washed medina walls, mountain air, and painted doorways.", tags: ["calm", "tilework", "mountain light"], colors: ["#2F6F91", "#5FAFC4", "#A8D6D1", "#D9E9E2", "#1E4058"] },
   { id: "marrakech", name: "Marrakech Terracotta", region: "Marrakech", context: "Rose city walls, warm dust, and late afternoon courtyard light.", tags: ["sun-baked", "riad", "warm"], colors: ["#B94E35", "#D77A51", "#E8B36D", "#F1D8B2", "#763B32"] },
