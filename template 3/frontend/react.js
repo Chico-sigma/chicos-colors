@@ -953,7 +953,7 @@ function App() {
   const [galleryQuery, setGalleryQuery] = useState("");
   const [paletteQuery, setPaletteQuery] = useState("");
   const [paletteCategory, setPaletteCategory] = useState("All");
-  const [paletteMode, setPaletteMode] = useState("palettes");
+  const [paletteMode, setPaletteMode] = useState("colors");
   const [paletteSort, setPaletteSort] = useState("featured");
   const [favoriteColorIds, setFavoriteColorIds] = useState(() => readStored(FAVORITES_KEY, []));
   const [favoritePaletteIds, setFavoritePaletteIds] = useState(() => readStored(FAVORITES_KEY_PALETTES, []));
@@ -1013,20 +1013,6 @@ function App() {
     document.documentElement.dataset.theme = theme;
     writeStored("chicos-theme", theme);
   }, [theme]);
-
-  useEffect(() => {
-    const pageMeta = {
-      gallery: ["Chico's Colors | Color gallery", "Explore a clean, international color library with HEX, RGB, HSL, contrast, and copy tools."],
-      palettes: ["Chico's Colors | Moroccan palettes", "Discover curated Moroccan-inspired palettes shaped by architecture, landscape, craft, and light."],
-      builder: ["Chico's Colors | Harmony Builder", "Build complementary, analogous, triadic, and monochromatic color harmonies."],
-      extract: ["Chico's Colors | Image palette extractor", "Extract a practical color palette from an image with Chico's Colors."],
-      assistant: ["Chico's Colors | AI Color Assistant", "Generate a thoughtful five-color starting point for your design brief."]
-    }[activeView];
-    if (!pageMeta) return;
-    document.title = pageMeta[0];
-    const description = document.querySelector('meta[name="description"]');
-    if (description) description.setAttribute("content", pageMeta[1]);
-  }, [activeView]);
 
   useEffect(() => {
     function updateHeaderState() {
@@ -1224,18 +1210,6 @@ function App() {
       await navigator.clipboard.writeText(color.hex);
       setCopiedColorId(color.id);
       setStatusMessage(`${color.name} HEX code copied.`);
-      window.setTimeout(() => setCopiedColorId(null), 1600);
-    } catch (error) {
-      setStatusMessage("Clipboard access is unavailable in this browser.");
-    }
-  }
-
-  async function copyColorFormat(color, format) {
-    const value = format === "hex" ? color.hex : format === "rgb" ? getRgbLabel(color.hex) : format === "hsl" ? getHslLabel(color.hex) : `color: ${color.hex};`;
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopiedColorId(`${color.id}-${format}`);
-      setStatusMessage(`${format.toUpperCase()} copied.`);
       window.setTimeout(() => setCopiedColorId(null), 1600);
     } catch (error) {
       setStatusMessage("Clipboard access is unavailable in this browser.");
@@ -1482,16 +1456,15 @@ function App() {
   }
 
   useEffect(() => {
-    if (!selectedColor && !selectedPalette) return undefined;
+    if (!selectedColor) return undefined;
 
     function handleEscape(event) {
       if (event.key === "Escape") setSelectedColor(null);
-      if (event.key === "Escape") setSelectedPalette(null);
     }
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [selectedColor, selectedPalette]);
+  }, [selectedColor]);
 
   useEffect(() => {
     if (!isMenuOpen) return undefined;
@@ -1635,6 +1608,25 @@ function App() {
               </div>
             </section>
 
+            <section className="moroccan-colors-section" aria-labelledby="moroccan-colors-title">
+              <MoroccanPattern className="section-pattern" />
+              <div className="container">
+                <div className="section-heading">
+                  <div>
+                    <p className="eyebrow">A considered palette</p>
+                    <h2 id="moroccan-colors-title">Moroccan Colors</h2>
+                  </div>
+                  <span className="section-meta">Inspired, not prescribed</span>
+                </div>
+                <p className="moroccan-intro">A focused collection of shades interpreted from Morocco's light, landscapes, materials, and everyday color stories.</p>
+                <div className="color-grid moroccan-color-grid">
+                  {MOROCCAN_COLORS.map((color) => (
+                    <ColorCard key={color.id} color={color} isFavorite={favoriteColorIds.includes(color.id)} onToggle={toggleColorFavorite} onCopy={copyColorHex} onOpen={setSelectedColor} />
+                  ))}
+                </div>
+              </div>
+            </section>
+
             <section className="container" aria-label="Featured palettes preview">
               <div className="section-heading">
                 <h2>Featured palettes</h2>
@@ -1675,25 +1667,32 @@ function App() {
         )}
 
         {activeView === "palettes" && (
-          <section className="palette-section palette-experience" id="palettes">
+          <section className="palette-section" id="palettes">
             <div className="container">
-              <div className="palette-hero">
-                <MoroccanPattern className="palette-hero-pattern" />
-                <p className="eyebrow">Curated in color</p>
-                <h1>Palettes with a <em>Moroccan soul.</em></h1>
-                <p>Editorial color stories shaped by riad light, Atlantic air, desert earth, and the craft of zellige.</p>
+              <div className="section-heading">
+                <h2>Palettes</h2>
+                <span className="section-meta">{filteredPaletteColors.length} colors · {filteredPalettes.length} collections</span>
               </div>
 
-              <div className="palette-toolbar">
-                <SearchBar query={paletteQuery} onChange={setPaletteQuery} placeholder="Search palettes, places, colors, or HEX..." />
-                <label className="palette-sort"><span>Sort</span><select value={paletteSort} onChange={(event) => setPaletteSort(event.target.value)} aria-label="Sort palettes"><option value="featured">Featured</option><option value="az">A-Z</option><option value="favorites">Favorites first</option></select></label>
+              <div className="palette-view-tabs" role="tablist" aria-label="Palette page views">
+                <button type="button" className={paletteMode === "colors" ? "active" : ""} onClick={() => setPaletteMode("colors")} role="tab" aria-selected={paletteMode === "colors"}>Single Colors</button>
+                <button type="button" className={paletteMode === "palettes" ? "active" : ""} onClick={() => setPaletteMode("palettes")} role="tab" aria-selected={paletteMode === "palettes"}>Color Palettes</button>
               </div>
 
-              <div className="palette-filter-row" aria-label="Palette inspiration filters">
-                {CATEGORY_OPTIONS.map((category) => <button key={category} type="button" className={`filter-pill ${paletteCategory === category ? "active" : ""}`} onClick={() => setPaletteCategory(category)}>{category}</button>)}
-              </div>
+              <SearchBar query={paletteQuery} onChange={setPaletteQuery} placeholder="Search colors, palettes, or moods..." />
 
-              <div className="palette-results-heading"><div><p className="eyebrow">Moroccan color stories</p><h2>Find your atmosphere</h2></div><span className="section-meta">{filteredPalettes.length} palettes</span></div>
+              <div className="filter-pills" aria-label="Color and palette category filters">
+                {CATEGORY_OPTIONS.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    className={`filter-pill ${paletteCategory === category ? "active" : ""}`}
+                    onClick={() => setPaletteCategory(category)}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
 
               {paletteMode === "colors" && <section className="palette-color-library" aria-labelledby="full-color-library-title">
                 <div className="section-heading">
@@ -1722,7 +1721,57 @@ function App() {
               {paletteMode === "palettes" && filteredPalettes.length ? (
                 <div className="palette-list">
                   {filteredPalettes.map((palette) => (
-                    <PaletteCard key={palette.id} palette={palette} isFavorite={favoritePaletteIds.includes(palette.id)} onToggle={togglePaletteFavorite} onCopy={copyPaletteHexes} onOpen={openPaletteOrColor} onExport={exportPalette} />
+                    <article className="palette-card" key={palette.id}>
+                      <div className="palette-card-head">
+                        <div>
+                          <h3>{palette.name}</h3>
+                          <span className="palette-category">{palette.category}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className={`palette-heart ${favoritePaletteIds.includes(palette.id) ? "is-active" : ""}`}
+                          aria-label={`${favoritePaletteIds.includes(palette.id) ? "Remove" : "Add"} ${palette.name} from favorites`}
+                          onClick={() => togglePaletteFavorite(palette.id)}
+                        >
+                          {favoritePaletteIds.includes(palette.id) ? "♥" : "♡"}
+                        </button>
+                      </div>
+
+                      <p className="palette-desc">{palette.description}</p>
+
+                      <div className="palette-swatch-grid">
+                        {palette.colors.map((colorId) => {
+                          const color = COLOR_LIBRARY.find((entry) => entry.id === colorId);
+                          return (
+                            <button
+                              key={`${palette.id}-${colorId}`}
+                              type="button"
+                              className={`palette-swatch${selectedColor?.id === color.id ? " is-selected" : ""}`}
+                              style={{ backgroundColor: color.hex }}
+                              onClick={() => setSelectedColor(color)}
+                              aria-label={`View details for ${color.name}, ${color.hex}`}
+                            >
+                              <span className="palette-swatch-label">{color.name.split(" ")[0]}</span>
+                              {copiedColorId === color.id && <span className="swatch-feedback">Copied!</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="palette-actions">
+                        <button type="button" className="copy-btn" onClick={() => copyPaletteHexes(palette)}>Copy All Hex Codes</button>
+                        <label className="export-control">
+                          <span>Export</span>
+                          <select defaultValue="" onChange={(event) => { exportPalette(palette, event.target.value); event.target.value = ""; }} aria-label={`Export ${palette.name}`}>
+                            <option value="" disabled>Choose format</option>
+                            <option value="hex">HEX array</option>
+                            <option value="tailwind">Tailwind CSS Config</option>
+                            <option value="figma">Figma JSON Tokens</option>
+                            <option value="css-root">CSS Root Variables</option>
+                          </select>
+                        </label>
+                      </div>
+                    </article>
                   ))}
                 </div>
               ) : (
@@ -1936,44 +1985,24 @@ function App() {
               <dl className="color-values">
                 <div>
                   <dt>HEX</dt>
-                  <dd>{selectedColor.hex} <button type="button" className="value-copy" onClick={() => copyColorFormat(selectedColor, "hex")}>{copiedColorId === `${selectedColor.id}-hex` ? "Copied" : "Copy"}</button></dd>
+                  <dd>{selectedColor.hex}</dd>
                 </div>
                 <div>
                   <dt>RGB</dt>
-                  <dd>{getRgbLabel(selectedColor.hex)} <button type="button" className="value-copy" onClick={() => copyColorFormat(selectedColor, "rgb")}>{copiedColorId === `${selectedColor.id}-rgb` ? "Copied" : "Copy"}</button></dd>
+                  <dd>{getRgbLabel(selectedColor.hex)}</dd>
                 </div>
                 <div>
                   <dt>HSL</dt>
-                  <dd>{getHslLabel(selectedColor.hex)} <button type="button" className="value-copy" onClick={() => copyColorFormat(selectedColor, "hsl")}>{copiedColorId === `${selectedColor.id}-hsl` ? "Copied" : "Copy"}</button></dd>
+                  <dd>{getHslLabel(selectedColor.hex)}</dd>
                 </div>
                 <div>
                   <dt>CSS</dt>
-                  <dd>color: {selectedColor.hex}; <button type="button" className="value-copy" onClick={() => copyColorFormat(selectedColor, "css")}>{copiedColorId === `${selectedColor.id}-css` ? "Copied" : "Copy"}</button></dd>
+                  <dd>color: {selectedColor.hex};</dd>
                 </div>
               </dl>
               <button type="button" className="primary-btn modal-copy-btn" onClick={() => copyColorHex(selectedColor)}>
                 {copiedColorId === selectedColor.id ? "Copied!" : "Copy Hex"}
               </button>
-            </section>
-          </div>
-        )}
-
-        {selectedPalette && (
-          <div className="modal-backdrop palette-detail-backdrop" role="presentation" onMouseDown={() => setSelectedPalette(null)}>
-            <section className="palette-detail-modal" role="dialog" aria-modal="true" aria-labelledby="palette-detail-title" onMouseDown={(event) => event.stopPropagation()}>
-              <button type="button" className="modal-close" onClick={() => setSelectedPalette(null)} aria-label="Close palette details">×</button>
-              <div className="palette-detail-preview">{selectedPalette.colors.map((value, index) => <span key={`${selectedPalette.id}-${index}`} style={{ backgroundColor: getColorHex(value) }} />)}</div>
-              <p className="eyebrow">Palette detail</p>
-              <h2 id="palette-detail-title">{selectedPalette.name}</h2>
-              <p className="modal-origin">{selectedPalette.description}</p>
-              <div className="palette-detail-values">
-                {selectedPalette.colors.map((value, index) => {
-                  const hex = getColorHex(value);
-                  const color = COLOR_LIBRARY.find((entry) => entry.id === value);
-                  return <div key={`${selectedPalette.id}-value-${index}`}><span className="palette-detail-dot" style={{ backgroundColor: hex }} /><strong>{color?.name || `Color ${index + 1}`}</strong><code>{hex}</code><span>{getRgbLabel(hex)}</span><span>{getHslLabel(hex)}</span><button type="button" className="palette-detail-copy" onClick={() => copyColorHex({ id: `${selectedPalette.id}-${index}`, name: color?.name || `Color ${index + 1}`, hex })}>{copiedColorId === `${selectedPalette.id}-${index}` ? "Copied" : "Copy"}</button></div>;
-                })}
-              </div>
-              <button type="button" className="primary-btn modal-copy-btn" onClick={() => exportPalette(selectedPalette, "css-root")}>Copy CSS variables</button>
             </section>
           </div>
         )}
