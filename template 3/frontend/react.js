@@ -1,4 +1,4 @@
-const { useEffect, useId, useMemo, useState } = React;
+const { useEffect, useId, useMemo, useRef, useState } = React;
 
 const COLOR_LIBRARY = [
   { id: "majorelle-blue", name: "Majorelle Blue", hex: "#3F5AA8", tag: "Architecture", location: "Marrakech riads" },
@@ -958,6 +958,7 @@ function App() {
     if (storedTheme === "light" || storedTheme === "dark") return storedTheme;
     return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   });
+  const headerRef = useRef(null);
 
   function navigateTo(view) {
     setActiveView(view);
@@ -1414,14 +1415,39 @@ function App() {
     return () => document.removeEventListener("keydown", handleEscape);
   }, [selectedColor]);
 
+  useEffect(() => {
+    if (!isMenuOpen) return undefined;
+
+    function closeMenu(event) {
+      if (event.type === "keydown" && event.key !== "Escape") return;
+      if (event.type !== "keydown" && headerRef.current?.contains(event.target)) return;
+      setIsMenuOpen(false);
+    }
+
+    document.addEventListener("pointerdown", closeMenu);
+    document.addEventListener("keydown", closeMenu);
+    return () => {
+      document.removeEventListener("pointerdown", closeMenu);
+      document.removeEventListener("keydown", closeMenu);
+    };
+  }, [isMenuOpen]);
+
   return (
     <div className="app-shell">
-      <header className="site-header">
+      <header className="site-header" ref={headerRef}>
         <div className="container nav-row">
           <a className="brand" href="#top" onClick={() => navigateTo("gallery")}>
             <span className="brand-mark">C</span>
             <span className="brand-name">Chico's <span>Colors</span></span>
           </a>
+
+          <button type="button" className="menu-toggle" aria-expanded={isMenuOpen} aria-controls="main-navigation" onClick={() => setIsMenuOpen((isOpen) => !isOpen)}>
+            <svg className="menu-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="m12 1.5 2.2 5.3 5.3-2.2-2.2 5.3 5.3 2.2-5.3 2.2 2.2 5.3-5.3-2.2-2.2 5.3-2.2-5.3-5.3 2.2 2.2-5.3-5.3-2.2 5.3-2.2-2.2-5.3 5.3 2.2L12 1.5Z" />
+              <path d="m12 7.2 1.2 3.6 3.6 1.2-3.6 1.2-1.2 3.6-1.2-3.6-3.6-1.2 3.6-1.2L12 7.2Z" />
+            </svg>
+            <span className="sr-only">Open navigation menu</span>
+          </button>
 
           <div className="header-actions">
             <label className="header-search">
@@ -1430,10 +1456,6 @@ function App() {
             </label>
             <button type="button" className="cart-btn" aria-label="Color cart" title="Color cart">&#128722;<span>0</span></button>
             <button type="button" className="theme-toggle" onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>{theme === "dark" ? "☼" : "◐"}</button>
-            <button type="button" className="menu-toggle" aria-expanded={isMenuOpen} aria-controls="main-navigation" onClick={() => setIsMenuOpen((isOpen) => !isOpen)}>
-              <span className="menu-toggle-icon" aria-hidden="true"><i></i><i></i><i></i></span>
-              <span className="sr-only">Menu</span>
-            </button>
           </div>
 
           <nav id="main-navigation" className={`nav-links ${isMenuOpen ? "is-open" : ""}`} aria-label="Main nav">
