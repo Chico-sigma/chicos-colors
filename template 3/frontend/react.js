@@ -815,18 +815,6 @@ function PaletteCard({ palette, isFavorite, onToggle, onCopy, onOpen, onExport }
   );
 }
 
-function HomeToolCard({ eyebrow, title, description, label, onClick, className = "" }) {
-  return (
-    <article className={`home-tool-card ${className}`}>
-      <span className="home-tool-mark" aria-hidden="true">✦</span>
-      <p className="eyebrow">{eyebrow}</p>
-      <h3>{title}</h3>
-      <p>{description}</p>
-      <button type="button" className="home-tool-link" onClick={onClick}>{label} <span aria-hidden="true">→</span></button>
-    </article>
-  );
-}
-
 function Favorites({ savedColors, savedPalettes, savedCustomColors, savedCustomPalettes, onRemoveColor, onRemovePalette, onRemoveCustomColor, onRemoveCustomPalette, onExportPalette }) {
   const items = [
     ...savedColors.map((color) => ({ id: color.id, label: color.name, code: color.hex, swatch: color.hex, type: "color" })),
@@ -1564,47 +1552,126 @@ function App() {
 
       <main>
         {activeView === "gallery" && (
-          <div className="home-page">
-            <section className="home-hero">
-              <MoroccanPattern className="home-hero-pattern" />
-              <div className="container home-hero-grid">
-                <div className="home-hero-copy">
-                  <p className="eyebrow">Chico's Colors / Moroccan color discovery</p>
-                  <h1>Find the color that gives your idea <em>a point of view.</em></h1>
-                  <p>Explore a precise color toolkit shaped by Moroccan light, material, and craft. Discover curated palettes, build harmonies, and take every color straight into your next design.</p>
-                  <div className="cta-row"><button type="button" className="primary-btn" onClick={() => setActiveView("palettes")}>Explore palettes</button><button type="button" className="secondary-btn" onClick={() => setActiveView("builder")}>Build a harmony</button></div>
-                  <div className="home-stats" aria-label="Library statistics"><span><strong>{COLOR_LIBRARY.length}</strong> shades</span><span><strong>{PALETTE_LIBRARY.length}</strong> curated stories</span><span><strong>{favoriteColorIds.length + favoritePaletteIds.length}</strong> saved picks</span></div>
+          <>
+            <section className="hero">
+              <MoroccanPattern className="hero-pattern" />
+              <div className="container hero-grid">
+                <div>
+                  <p className="eyebrow">Moroccan color stories</p>
+                  <h1>Discover colors <em>inspired by Morocco.</em></h1>
+                  <p className="hero-copy">
+                    Discover rich palettes shaped by Moroccan landscapes, artisan craft, and timeless color stories, translated into a precise modern toolkit for digital design.
+                  </p>
+                  <div className="cta-row">
+                    <button type="button" className="primary-btn" onClick={() => setActiveView("palettes")}>Explore palettes</button>
+                    <button type="button" className="secondary-btn" onClick={() => setActiveView("builder")}>Create harmony</button>
+                  </div>
+                  <div className="stats">
+                    <div className="stat-box">
+                      <strong>{FEATURED_COLORS.length}</strong>
+                      <span>curated shades</span>
+                    </div>
+                    <div className="stat-box">
+                      <strong>{PALETTE_LIBRARY.length}</strong>
+                      <span>palette stories</span>
+                    </div>
+                    <div className="stat-box">
+                      <strong>{favoriteColorIds.length + favoritePaletteIds.length}</strong>
+                      <span>saved picks</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="home-hero-preview" aria-label="Interactive Marrakech-inspired palette preview">
-                  <div className="home-preview-top"><span>Palette study / 01</span><span>Morocco</span></div>
-                  <div className="home-preview-swatches">{(featuredPalettes[0]?.colors || []).map((value, index) => { const color = COLOR_LIBRARY.find((entry) => entry.id === value); return <button key={value} type="button" style={{ backgroundColor: getColorHex(value) }} onClick={() => openPaletteOrColor(color)} aria-label={`Open ${color?.name || `color ${index + 1}`}`}><span>{color?.name || "Color"}</span><small>{getColorHex(value)}</small></button>; })}</div>
-                  <div className="home-preview-caption"><strong>{featuredPalettes[0]?.name || "Sunset Courtyard"}</strong><span>Terracotta / stone / late light</span></div>
+
+                <div className="hero-panel" aria-label="Featured palette preview">
+                  <div className="panel-grid">
+                    {COLOR_LIBRARY.slice(0, 5).map((color) => (
+                      <div key={color.id} className="panel-swatch" style={{ backgroundColor: color.hex }} title={`${color.name}: ${color.hex}`} />
+                    ))}
+                  </div>
                 </div>
               </div>
             </section>
 
-            <section className="home-section home-palette-section" aria-labelledby="home-palettes-title">
+            <section className="container story-grid" aria-label="Color inspiration">
+              <article className="story-card">
+                <h3>Sunrise warmth</h3>
+                <p>Sun-baked ochres and saffron tones create calm but vibrant interiors.</p>
+              </article>
+              <article className="story-card">
+                <h3>Ocean calm</h3>
+                <p>Teal, blue, and misty aqua tones bring air, reflection, and balance.</p>
+              </article>
+              <article className="story-card">
+                <h3>Earthy rhythm</h3>
+                <p>Clay, olive, and stone tones ground the app in craft and depth.</p>
+              </article>
+            </section>
+
+            <section className="gallery-section" id="gallery">
               <div className="container">
-                <div className="home-section-heading"><div><p className="eyebrow">Editorial collection</p><h2 id="home-palettes-title">Featured palettes</h2></div><button type="button" className="section-link" onClick={() => setActiveView("palettes")}>View all palettes <span aria-hidden="true">→</span></button></div>
-                <p className="home-section-intro">Color stories drawn from riad walls, Atlantic horizons, desert roads, and the quiet geometry of Moroccan craft.</p>
-                <div className="home-palette-grid">{featuredPalettes.map((palette) => <PaletteCard key={palette.id} palette={palette} isFavorite={favoritePaletteIds.includes(palette.id)} onToggle={togglePaletteFavorite} onCopy={copyPaletteHexes} onOpen={openPaletteOrColor} onExport={exportPalette} />)}</div>
+                <div className="section-heading">
+                  <h2>Color gallery</h2>
+                  <span className="section-meta">{featuredColors.length} featured shades</span>
+                </div>
+
+                <SearchBar query={galleryQuery} onChange={setGalleryQuery} placeholder="Search colors, tags, or locations..." />
+
+                {featuredColors.length ? (
+                  <div className="color-grid">
+                    {featuredColors.map((color) => (
+                      <ColorCard
+                        key={color.id}
+                        color={color}
+                        isFavorite={favoriteColorIds.includes(color.id)}
+                        onToggle={toggleColorFavorite}
+                        onCopy={copyColorHex}
+                        onOpen={setSelectedColor}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state">No shades match this search. Try another location, tag, or color value.</div>
+                )}
               </div>
             </section>
 
-            <section className="home-section home-color-section" id="gallery" aria-labelledby="home-colors-title">
-              <div className="container"><div className="home-section-heading"><div><p className="eyebrow">International color utility</p><h2 id="home-colors-title">Start with a single color</h2></div><button type="button" className="section-link" onClick={() => setActiveView("palettes")}>Browse the library <span aria-hidden="true">→</span></button></div><div className="home-color-toolbar"><p>Clean, practical color references for screens, surfaces, and systems.</p><SearchBar query={galleryQuery} onChange={setGalleryQuery} placeholder="Search colors..." /></div>{featuredColors.length ? <div className="color-grid">{featuredColors.slice(0, 8).map((color) => <ColorCard key={color.id} color={color} isFavorite={favoriteColorIds.includes(color.id)} onToggle={toggleColorFavorite} onCopy={copyColorHex} onOpen={setSelectedColor} />)}</div> : <div className="empty-state">No shades match this search.</div>}</div>
+            <section className="container" aria-label="Featured palettes preview">
+              <div className="section-heading">
+                <h2>Featured palettes</h2>
+                <span className="section-meta">3 curated stories</span>
+              </div>
+
+              <div className="featured-grid">
+                {featuredPalettes.map((palette) => (
+                  <article className="featured-card" key={palette.id}>
+                    <div className="featured-card-top">
+                      <h3>{palette.name}</h3>
+                      <span className="featured-category">{palette.category}</span>
+                    </div>
+                    <div className="featured-swatches">
+                      {palette.colors.map((colorId) => (
+                        <div key={`${palette.id}-${colorId}`} className="featured-swatch" style={{ backgroundColor: getColorHex(colorId) }} />
+                      ))}
+                    </div>
+                    <div className="featured-meta">
+                      <span className="featured-text">{palette.description}</span>
+                      <div className="featured-actions">
+                        <label className="export-control"><span>Export</span><select defaultValue="" onChange={(event) => { exportPalette(palette, event.target.value); event.target.value = ""; }} aria-label={`Export ${palette.name}`}><option value="" disabled>Choose format</option><option value="hex">HEX array</option><option value="tailwind">Tailwind CSS Config</option><option value="figma">Figma JSON Tokens</option><option value="css-root">CSS Root Variables</option></select></label>
+                        <button
+                          type="button"
+                          className={`featured-heart ${favoritePaletteIds.includes(palette.id) ? "is-active" : ""}`}
+                          onClick={() => togglePaletteFavorite(palette.id)}
+                          aria-label={`${favoritePaletteIds.includes(palette.id) ? "Remove" : "Add"} ${palette.name} from favorites`}
+                        >
+                          {favoritePaletteIds.includes(palette.id) ? "♥" : "♡"}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </section>
-
-            <section className="home-section home-tools-section" aria-labelledby="home-tools-title">
-              <div className="container"><div className="home-section-heading"><div><p className="eyebrow">From idea to interface</p><h2 id="home-tools-title">Tools for the next step</h2></div></div><div className="home-tools-grid"><HomeToolCard className="tool-moroccan" eyebrow="Explore" title="Palette Explorer" description="Browse curated color stories and find the right atmosphere for a project." label="Open palettes" onClick={() => setActiveView("palettes")} /><HomeToolCard className="tool-moroccan" eyebrow="Create" title="Harmony Builder" description="Generate complementary, analogous, triadic, and monochromatic directions." label="Build a harmony" onClick={() => setActiveView("builder")} /><HomeToolCard className="tool-moroccan" eyebrow="Capture" title="Extract from Image" description="Turn a textile, photograph, or moodboard into a practical five-color palette." label="Extract colors" onClick={() => setActiveView("extract")} /><HomeToolCard className="tool-moroccan" eyebrow="Imagine" title="AI Assistant" description="Describe a mood or brief and get a considered five-color starting point." label="Ask the assistant" onClick={() => setActiveView("assistant")} /></div></div>
-            </section>
-
-            <section className="home-section home-stories-section" aria-labelledby="home-stories-title"><div className="container"><div className="home-section-heading"><div><p className="eyebrow">The palette stories</p><h2 id="home-stories-title">Place, material, light.</h2></div></div><div className="home-story-grid"><article><span>01 / Marrakech</span><h3>Sun-baked confidence</h3><p>Terracotta, saffron, and warm stone translated into an expressive palette for spaces with presence.</p></article><article><span>02 / Chefchaouen</span><h3>Blue, softened</h3><p>Clear cobalt, pale tile, and cool shadow create a calm foundation without losing character.</p></article><article><span>03 / The Atlas</span><h3>Grounded and open</h3><p>Cedar, mineral earth, and highland light bring balance to interfaces and interiors alike.</p></article></div></div></section>
-
-            <section className="home-section home-how-section" aria-labelledby="home-how-title"><div className="container"><div className="home-section-heading"><div><p className="eyebrow">A simple rhythm</p><h2 id="home-how-title">From first glance to final token.</h2></div></div><div className="home-steps"><div><strong>01</strong><h3>Discover</h3><p>Find a color or atmosphere that starts the conversation.</p></div><div><strong>02</strong><h3>Create</h3><p>Build harmonies and variations with practical controls.</p></div><div><strong>03</strong><h3>Save</h3><p>Keep the colors and palettes worth returning to.</p></div><div><strong>04</strong><h3>Use</h3><p>Copy HEX, RGB, HSL, CSS, or export your system.</p></div></div></div></section>
-
-            <section className="home-final-cta"><MoroccanPattern className="home-cta-pattern" /><div className="container"><p className="eyebrow">Your next direction is here</p><h2>Make color the clearest part of the idea.</h2><button type="button" className="primary-btn" onClick={() => setActiveView("palettes")}>Find your next palette <span aria-hidden="true">→</span></button></div></section>
-          </div>
+          </>
         )}
 
         {activeView === "palettes" && (
