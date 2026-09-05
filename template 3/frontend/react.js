@@ -1,4 +1,4 @@
-const { useEffect, useMemo, useState } = React;
+const { useEffect, useId, useMemo, useState } = React;
 
 const COLOR_LIBRARY = [
   { id: "majorelle-blue", name: "Majorelle Blue", hex: "#3F5AA8", tag: "Architecture", location: "Marrakech riads" },
@@ -200,7 +200,15 @@ const COLOR_LIBRARY = [
   { id: "metallic-amber", name: "Metallic Amber", hex: "#BF8B30", tag: "Luxury Metallic", location: "Golden cabinet" },
   { id: "metallic-graphite", name: "Metallic Graphite", hex: "#4B5054", tag: "Luxury Metallic", location: "Design studio" },
   { id: "gothic-ink", name: "Gothic Ink", hex: "#1F2633", tag: "Dark Gothic", location: "Sealed archive" },
-  { id: "gothic-ivy", name: "Gothic Ivy", hex: "#344E41", tag: "Dark Gothic", location: "Ruined cloister" }
+  { id: "gothic-ivy", name: "Gothic Ivy", hex: "#344E41", tag: "Dark Gothic", location: "Ruined cloister" },
+  { id: "moroccan-red", name: "Moroccan Red", hex: "#A83D2C", tag: "Moroccan Colors", location: "Inspired by warm clay and sunlit walls" },
+  { id: "sahara-sand", name: "Sahara Sand", hex: "#D8BA8D", tag: "Moroccan Colors", location: "Inspired by desert light" },
+  { id: "atlas-green", name: "Atlas Green", hex: "#4C6B50", tag: "Moroccan Colors", location: "Inspired by mountain cedar" },
+  { id: "zellige-green", name: "Zellige Green", hex: "#2F7775", tag: "Moroccan Colors", location: "Inspired by glazed tile" },
+  { id: "ocean-blue", name: "Atlantic Blue", hex: "#286B83", tag: "Moroccan Colors", location: "Inspired by the Atlantic coast" },
+  { id: "mint-tea-inspired", name: "Mint Tea", hex: "#9ACCB0", tag: "Moroccan Colors", location: "Inspired by a cool courtyard pour" },
+  { id: "marrakech-sunset", name: "Marrakech Sunset", hex: "#D96C55", tag: "Moroccan Colors", location: "Inspired by evening terracotta" },
+  { id: "majorelle-inspired", name: "Majorelle Blue", hex: "#3F5AA8", tag: "Moroccan Colors", location: "Inspired by vivid garden blue" }
 ];
 
 const CATEGORY_OPTIONS = ["All", "Architecture", "Nature", "Crafts", "Coastal", "Cyberpunk Neon", "Soft Pastel", "Earthy Nature", "Luxury Metallic", "Dark Gothic"];
@@ -212,6 +220,8 @@ const FEATURED_COLOR_IDS = [
   "obsidian-night", "velvet-crimson", "eclipse-blue", "poison-ivy"
 ];
 const FEATURED_COLORS = FEATURED_COLOR_IDS.map((id) => COLOR_LIBRARY.find((color) => color.id === id)).filter(Boolean);
+const MOROCCAN_COLOR_IDS = ["moroccan-red", "majorelle-inspired", "sahara-sand", "atlas-green", "zellige-green", "ocean-blue", "mint-tea-inspired", "marrakech-sunset"];
+const MOROCCAN_COLORS = MOROCCAN_COLOR_IDS.map((id) => COLOR_LIBRARY.find((color) => color.id === id)).filter(Boolean);
 
 const COLOR_FAMILY_MAP = {
   blue: ["blue", "bleu", "azraq", "cyan", "indigo", "navy", "sky", "cobalt", "majorelle", "turquoise", "azure", "teal", "aqua", "cerulean", "lagoon"],
@@ -544,6 +554,21 @@ const CITY_PALETTES = [
   { id: "rabat", name: "Rabat Ochre", region: "Rabat", context: "Atlantic ramparts, ochre courtyards, and the calm green of coastal gardens.", tags: ["ramparts", "ochre", "garden"], colors: ["#B77B45", "#D5A25C", "#E8D7B0", "#557A6E", "#2E5965"] }
 ];
 
+function MoroccanPattern({ className = "" }) {
+  const patternId = `zellige-${useId().replace(/:/g, "")}`;
+  return (
+    <svg className={`moroccan-pattern ${className}`} viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+      <defs>
+        <pattern id={patternId} width="60" height="60" patternUnits="userSpaceOnUse">
+          <path d="M30 3 57 30 30 57 3 30Z M30 15 45 30 30 45 15 30Z" fill="none" stroke="currentColor" strokeWidth="1" />
+          <path d="M0 0h12v12H0z M48 0h12v12H48z M0 48h12v12H0z M48 48h12v12H48z" fill="currentColor" opacity=".45" />
+        </pattern>
+      </defs>
+      <rect width="120" height="120" fill={`url(#${patternId})`} />
+    </svg>
+  );
+}
+
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 function readStored(key, fallback = []) {
@@ -738,7 +763,7 @@ function SearchBar({ query, onChange, placeholder }) {
   );
 }
 
-function ColorCard({ color, isFavorite, onToggle }) {
+function ColorCard({ color, isFavorite, onToggle, onCopy, onOpen }) {
   return (
     <article className="color-card" style={{ backgroundColor: color.hex }}>
       <div className="card-top">
@@ -757,6 +782,10 @@ function ColorCard({ color, isFavorite, onToggle }) {
         </button>
       </div>
       <p className="color-origin">{color.location}</p>
+      <div className="color-card-actions">
+        <button type="button" className="color-card-action" onClick={() => onCopy?.(color)}>Copy HEX</button>
+        <button type="button" className="color-card-action" onClick={() => onOpen?.(color)}>Details</button>
+      </div>
     </article>
   );
 }
@@ -924,6 +953,11 @@ function App() {
   const [authToken, setAuthToken] = useState(() => readStored(AUTH_TOKEN_KEY, ""));
   const [currentUser, setCurrentUser] = useState(() => readStored(AUTH_USER_KEY, null));
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    const storedTheme = readStored("chicos-theme", "");
+    if (storedTheme === "light" || storedTheme === "dark") return storedTheme;
+    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  });
 
   function navigateTo(view) {
     setActiveView(view);
@@ -945,6 +979,11 @@ function App() {
   useEffect(() => {
     writeStored(CUSTOM_PALETTE_FAVORITES_KEY, customPaletteFavorites);
   }, [customPaletteFavorites]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    writeStored("chicos-theme", theme);
+  }, [theme]);
 
   function applyServerFavorites(favorites = []) {
     setFavoriteColorIds(favorites.filter((favorite) => favorite.type === "color").map((favorite) => favorite.itemId));
@@ -1390,6 +1429,7 @@ function App() {
               <input type="search" value={galleryQuery} onChange={(event) => setGalleryQuery(event.target.value)} placeholder="Search" aria-label="Search colors" />
             </label>
             <button type="button" className="cart-btn" aria-label="Color cart" title="Color cart">&#128722;<span>0</span></button>
+            <button type="button" className="theme-toggle" onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>{theme === "dark" ? "☼" : "◐"}</button>
             <button type="button" className="menu-toggle" aria-expanded={isMenuOpen} aria-controls="main-navigation" onClick={() => setIsMenuOpen((isOpen) => !isOpen)}>
               <span className="menu-toggle-icon" aria-hidden="true"><i></i><i></i><i></i></span>
               <span className="sr-only">Menu</span>
@@ -1415,12 +1455,13 @@ function App() {
         {activeView === "gallery" && (
           <>
             <section className="hero">
+              <MoroccanPattern className="hero-pattern" />
               <div className="container hero-grid">
                 <div>
                   <p className="eyebrow">Moroccan color stories</p>
-                  <h1>Find the shade that feels <em>like home.</em></h1>
+                  <h1>Discover colors <em>inspired by Morocco.</em></h1>
                   <p className="hero-copy">
-                    A warm, modern color library inspired by Marrakech courtyards, Atlantic blues, dusty ochres, garden terraces, and the craft of handmade design.
+                    A modern color library for thoughtful design, shaped by Atlantic light, desert warmth, garden blues, and the geometry of handmade craft.
                   </p>
                   <div className="cta-row">
                     <button type="button" className="primary-btn" onClick={() => setActiveView("palettes")}>Explore palettes</button>
@@ -1484,12 +1525,33 @@ function App() {
                         color={color}
                         isFavorite={favoriteColorIds.includes(color.id)}
                         onToggle={toggleColorFavorite}
+                        onCopy={copyColorHex}
+                        onOpen={setSelectedColor}
                       />
                     ))}
                   </div>
                 ) : (
                   <div className="empty-state">No shades match this search. Try another location, tag, or color value.</div>
                 )}
+              </div>
+            </section>
+
+            <section className="moroccan-colors-section" aria-labelledby="moroccan-colors-title">
+              <MoroccanPattern className="section-pattern" />
+              <div className="container">
+                <div className="section-heading">
+                  <div>
+                    <p className="eyebrow">A considered palette</p>
+                    <h2 id="moroccan-colors-title">Moroccan Colors</h2>
+                  </div>
+                  <span className="section-meta">Inspired, not prescribed</span>
+                </div>
+                <p className="moroccan-intro">A focused collection of shades interpreted from Morocco's light, landscapes, materials, and everyday color stories.</p>
+                <div className="color-grid moroccan-color-grid">
+                  {MOROCCAN_COLORS.map((color) => (
+                    <ColorCard key={color.id} color={color} isFavorite={favoriteColorIds.includes(color.id)} onToggle={toggleColorFavorite} onCopy={copyColorHex} onOpen={setSelectedColor} />
+                  ))}
+                </div>
               </div>
             </section>
 
@@ -1889,7 +1951,8 @@ function App() {
       </main>
 
       <footer className="site-footer">
-        <div className="container">Made for curious eyes · Chico's Colors</div>
+        <MoroccanPattern className="footer-pattern" />
+        <div className="container"><strong>Chico's Colors</strong><span>Moroccan-inspired color discovery</span><small>Made with care in Morocco · Built for curious eyes</small></div>
       </footer>
     </div>
   );
