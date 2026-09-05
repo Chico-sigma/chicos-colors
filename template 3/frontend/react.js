@@ -551,8 +551,22 @@ function readStored(key, fallback = []) {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : fallback;
   } catch (error) {
-    return fallback;
+    try {
+      const raw = localStorage.getItem(key);
+      return typeof fallback === "string" && raw ? raw : fallback;
+    } catch (storageError) {
+      return fallback;
+    }
   }
+}
+
+function writeStored(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    return false;
+  }
+  return true;
 }
 
 function hexToRgb(hex) {
@@ -666,7 +680,7 @@ function getWcagLabel(ratio) {
 }
 
 function getPaletteHexes(palette) {
-  return palette.colors.map((color) => typeof color === "string" && color.startsWith("#") ? color : getColorHex(color));
+  return palette.colors.map((color) => getColorHex(color));
 }
 
 function getPaletteExport(palette, format) {
@@ -795,6 +809,7 @@ function Favorites({ savedColors, savedPalettes, savedCustomColors, savedCustomP
 }
 
 function getColorHex(colorId) {
+  if (typeof colorId === "string" && /^#[0-9a-f]{6}$/i.test(colorId)) return colorId.toUpperCase();
   const color = COLOR_LIBRARY.find((entry) => entry.id === colorId);
   return color ? color.hex : "#D9D9D9";
 }
@@ -802,6 +817,11 @@ function getColorHex(colorId) {
 function getRgbLabel(hex) {
   const { r, g, b } = hexToRgb(hex);
   return `rgb(${r}, ${g}, ${b})`;
+}
+
+function getHslLabel(hex) {
+  const { h, s, l } = hexToHsl(hex);
+  return `hsl(${h}, ${s}%, ${l}%)`;
 }
 
 function AuthModal({ onClose, onAuthenticated }) {
@@ -838,8 +858,8 @@ function AuthModal({ onClose, onAuthenticated }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Unable to authenticate.");
 
-      localStorage.setItem(AUTH_TOKEN_KEY, data.token);
-      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
+      writeStored(AUTH_TOKEN_KEY, data.token);
+      writeStored(AUTH_USER_KEY, data.user);
       onAuthenticated(data.token, data.user);
       onClose();
     } catch (requestError) {
@@ -901,7 +921,7 @@ function App() {
   const [imageError, setImageError] = useState("");
   const [selectedColor, setSelectedColor] = useState(null);
   const [copiedColorId, setCopiedColorId] = useState(null);
-  const [authToken, setAuthToken] = useState(() => localStorage.getItem(AUTH_TOKEN_KEY) || "");
+  const [authToken, setAuthToken] = useState(() => readStored(AUTH_TOKEN_KEY, ""));
   const [currentUser, setCurrentUser] = useState(() => readStored(AUTH_USER_KEY, null));
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -911,19 +931,19 @@ function App() {
   }
 
   useEffect(() => {
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favoriteColorIds));
+    writeStored(FAVORITES_KEY, favoriteColorIds);
   }, [favoriteColorIds]);
 
   useEffect(() => {
-    localStorage.setItem(FAVORITES_KEY_PALETTES, JSON.stringify(favoritePaletteIds));
+    writeStored(FAVORITES_KEY_PALETTES, favoritePaletteIds);
   }, [favoritePaletteIds]);
 
   useEffect(() => {
-    localStorage.setItem(CUSTOM_FAVORITES_KEY, JSON.stringify(customFavorites));
+    writeStored(CUSTOM_FAVORITES_KEY, customFavorites);
   }, [customFavorites]);
 
   useEffect(() => {
-    localStorage.setItem(CUSTOM_PALETTE_FAVORITES_KEY, JSON.stringify(customPaletteFavorites));
+    writeStored(CUSTOM_PALETTE_FAVORITES_KEY, customPaletteFavorites);
   }, [customPaletteFavorites]);
 
   function applyServerFavorites(favorites = []) {
@@ -933,6 +953,7 @@ function App() {
     setCustomPaletteFavorites(favorites.filter((favorite) => favorite.type === "palette" && !ALL_PALETTES.some((palette) => palette.id === favorite.itemId)).map((favorite) => {
       const city = CITY_PALETTES.find((entry) => entry.id === favorite.itemId);
       if (city) return { id: city.id, name: city.name, colors: city.colors };
+      if (favorite.colors?.length) return { id: favorite.itemId, name: favorite.name || "Saved palette", colors: favorite.colors };
       if (favorite.itemId === "image-extract" && imagePalette) return imagePalette;
       return customPaletteFavorites.find((palette) => palette.id === favorite.itemId) || null;
     }).filter(Boolean));
@@ -948,7 +969,7 @@ function App() {
         if (!response.ok) throw new Error(data.message || "Session expired.");
         if (cancelled) return;
         setCurrentUser(data.user);
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
+        writeStored(AUTH_USER_KEY, data.user);
         applyServerFavorites(data.user.favorites);
       })
       .catch(() => {
@@ -1036,9 +1057,13 @@ function App() {
   }
 
   function togglePaletteFavorite(id) {
-    const palette = PALETTE_LIBRARY.find((entry) => entry.id === id);
+    const palette = ALL_PALETTES.find((entry) => entry.id === id);
+    if (!palette) {
+      setStatusMessage("That palette is no longer available.");
+      return;
+    }
     if (authToken) {
-      toggleFavoriteOnServer({ type: "palette", itemId: id, name: palette.name }, palette.name);
+      toggleFavoriteOnServer({ type: "palette", itemId: id, name: palette.name, colors: getPaletteHexes(palette) }, palette.name);
       return;
     }
     setFavoritePaletteIds((current) => {
@@ -1055,8 +1080,11 @@ function App() {
   }
 
   function handleLogout() {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(AUTH_USER_KEY);
+    try {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(AUTH_USER_KEY);
+    } catch (error) {
+    }
     setAuthToken("");
     setCurrentUser(null);
     setStatusMessage("You have been signed out.");
@@ -1068,17 +1096,24 @@ function App() {
   }
 
   function toggleCityFavorite(city = selectedCity) {
+    if (!city) return;
     const exists = customPaletteFavorites.some((favorite) => favorite.id === city.id);
     setCustomPaletteFavorites((current) => exists ? current.filter((favorite) => favorite.id !== city.id) : [...current, city]);
     if (authToken) {
-      toggleFavoriteOnServer({ type: "palette", itemId: city.id, name: city.name }, city.name);
+      toggleFavoriteOnServer({ type: "palette", itemId: city.id, name: city.name, colors: getPaletteHexes(city) }, city.name);
     } else {
       setStatusMessage(exists ? `${city.name} removed from favorites.` : `${city.name} saved to favorites.`);
     }
   }
 
+  function removeCustomPaletteFavorite(id) {
+    const palette = customPaletteFavorites.find((item) => item.id === id);
+    if (!palette) return;
+    toggleCityFavorite(palette);
+  }
+
   async function copyPaletteHexes(palette) {
-    const allHex = palette.colors.map((colorId) => getColorHex(colorId)).join(" • ");
+    const allHex = getPaletteHexes(palette).join(" • ");
     try {
       await navigator.clipboard.writeText(allHex);
       setStatusMessage(`${palette.name} hex codes copied.`);
@@ -1266,7 +1301,7 @@ function App() {
     if (exists) return;
     setCustomPaletteFavorites((current) => [...current, item]);
     if (authToken) {
-      toggleFavoriteOnServer({ type: "palette", itemId: item.id, name: item.name }, item.name);
+      toggleFavoriteOnServer({ type: "palette", itemId: item.id, name: item.name, colors: item.colors }, item.name);
     } else {
       setStatusMessage("Extracted palette saved to favorites.");
     }
@@ -1722,12 +1757,12 @@ function App() {
                   </div>
                   <div className="harmony-swatch-row">
                     {simulatedHarmonyColors.map((colorHex, index) => (
-                      <button key={`${colorHex}-${index}`} type="button" className={`harmony-swatch${lockedHarmonyColors[index] ? " is-locked" : ""}`} style={{ backgroundColor: colorHex }} onClick={() => toggleHarmonyLock(index)} title={`${colorHex} - ${lockedHarmonyColors[index] ? "Locked" : "Click to lock"}`} aria-label={`${lockedHarmonyColors[index] ? "Unlock" : "Lock"} harmony color ${index + 1}`}>
+                      <div key={`${colorHex}-${index}`} className={`harmony-swatch${lockedHarmonyColors[index] ? " is-locked" : ""}`} role="button" tabIndex="0" style={{ backgroundColor: colorHex }} onClick={() => toggleHarmonyLock(index)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggleHarmonyLock(index); } }} title={`${colorHex} - ${lockedHarmonyColors[index] ? "Locked" : "Click to lock"}`} aria-label={`${lockedHarmonyColors[index] ? "Unlock" : "Lock"} harmony color ${index + 1}`}>
                         <span className="harmony-label">{index + 1}</span>
                         <span className="harmony-hex-label">{colorHex}</span>
                         <span className="harmony-lock">{lockedHarmonyColors[index] ? "LOCKED" : "LOCK"}</span>
-                        <span className={`harmony-favorite${customFavorites.some((favorite) => favorite.id === `harmony-${colorHex.slice(1).toLowerCase()}`) ? " is-active" : ""}`} onClick={(event) => { event.stopPropagation(); toggleCustomFavorite(colorHex, `${harmonyRule} color ${index + 1}`); }} role="button" aria-label="Save generated harmony color">♥</span>
-                      </button>
+                        <button type="button" className={`harmony-favorite${customFavorites.some((favorite) => favorite.id === `harmony-${colorHex.slice(1).toLowerCase()}`) ? " is-active" : ""}`} onClick={(event) => { event.stopPropagation(); toggleCustomFavorite(colorHex, `${harmonyRule} color ${index + 1}`); }} aria-label="Save generated harmony color">♥</button>
+                      </div>
                     ))}
                   </div>
                 </article>
@@ -1822,6 +1857,14 @@ function App() {
                   <dt>RGB</dt>
                   <dd>{getRgbLabel(selectedColor.hex)}</dd>
                 </div>
+                <div>
+                  <dt>HSL</dt>
+                  <dd>{getHslLabel(selectedColor.hex)}</dd>
+                </div>
+                <div>
+                  <dt>CSS</dt>
+                  <dd>color: {selectedColor.hex};</dd>
+                </div>
               </dl>
               <button type="button" className="primary-btn modal-copy-btn" onClick={() => copyColorHex(selectedColor)}>
                 {copiedColorId === selectedColor.id ? "Copied!" : "Copy Hex"}
@@ -1840,7 +1883,7 @@ function App() {
           onRemoveColor={(colorId) => toggleColorFavorite(colorId)}
           onRemovePalette={(paletteId) => togglePaletteFavorite(paletteId)}
           onRemoveCustomColor={removeCustomFavorite}
-          onRemoveCustomPalette={(paletteId) => toggleCityFavorite(CITY_PALETTES.find((city) => city.id === paletteId))}
+          onRemoveCustomPalette={removeCustomPaletteFavorite}
           onExportPalette={(palette, format) => exportBrandCard(palette, format)}
         />
       </main>

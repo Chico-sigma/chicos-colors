@@ -26,6 +26,11 @@ img { display: block; max-width: 100%; }
 a { text-decoration: none; }
 button, input { font: inherit; }
 button { cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible, [role="button"]:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
 
 .app-shell { min-height: 100vh; }
 .container { width: min(100% - 28px, 1160px); margin: 0 auto; }
@@ -1153,6 +1158,11 @@ section.container[aria-label="Featured palettes preview"] {
     position: absolute;
     right: 8px;
     bottom: 7px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    background: transparent;
     z-index: 2;
     color: rgba(255,255,255,0.72);
     font-size: 15px;

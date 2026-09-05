@@ -22,6 +22,13 @@ const favoriteSchema = new mongoose.Schema(
       trim: true,
       uppercase: true,
       match: /^#[0-9A-F]{6}$/
+    },
+    colors: {
+      type: [String],
+      validate: {
+        validator: (colors) => colors.length <= 20 && colors.every((color) => /^#[0-9A-F]{6}$/i.test(color)),
+        message: "Favorite palettes may contain up to 20 valid HEX colors."
+      }
     }
   },
   { _id: false }
