@@ -953,6 +953,7 @@ function App() {
   const [authToken, setAuthToken] = useState(() => readStored(AUTH_TOKEN_KEY, ""));
   const [currentUser, setCurrentUser] = useState(() => readStored(AUTH_USER_KEY, null));
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [theme, setTheme] = useState(() => {
     const storedTheme = readStored("chicos-theme", "");
     if (storedTheme === "light" || storedTheme === "dark") return storedTheme;
@@ -985,6 +986,16 @@ function App() {
     document.documentElement.dataset.theme = theme;
     writeStored("chicos-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    function updateHeaderState() {
+      setIsHeaderScrolled(window.scrollY > 12);
+    }
+
+    updateHeaderState();
+    window.addEventListener("scroll", updateHeaderState, { passive: true });
+    return () => window.removeEventListener("scroll", updateHeaderState);
+  }, []);
 
   function applyServerFavorites(favorites = []) {
     setFavoriteColorIds(favorites.filter((favorite) => favorite.type === "color").map((favorite) => favorite.itemId));
@@ -1434,7 +1445,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="site-header" ref={headerRef}>
+      <header className={`site-header${isHeaderScrolled ? " is-scrolled" : ""}`} ref={headerRef}>
         <div className="container nav-row">
           <a className="brand" href="#top" onClick={() => navigateTo("gallery")}>
             <span className="brand-mark">C</span>
@@ -1454,7 +1465,6 @@ function App() {
               <span aria-hidden="true">⌕</span>
               <input type="search" value={galleryQuery} onChange={(event) => setGalleryQuery(event.target.value)} placeholder="Search" aria-label="Search colors" />
             </label>
-            <button type="button" className="cart-btn" aria-label="Color cart" title="Color cart">&#128722;<span>0</span></button>
             <button type="button" className="theme-toggle" onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>{theme === "dark" ? "☼" : "◐"}</button>
           </div>
 

@@ -65,7 +65,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, [role="button"]
     background: rgba(250, 248, 245, 0.88);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
+    transition: background .2s ease, box-shadow .2s ease;
 }
+.site-header.is-scrolled { background: rgba(250, 248, 245, 0.96); box-shadow: 0 10px 28px rgba(23,39,46,.08); }
+:root[data-theme="dark"] .site-header.is-scrolled { background: rgba(16, 27, 30, 0.97); box-shadow: 0 10px 28px rgba(0,0,0,.24); }
 .site-header::after {
     content: "";
     position: absolute;
@@ -1471,6 +1474,26 @@ section.container[aria-label="Featured palettes preview"] {
 :root[data-theme="dark"] .extracted-palette { background-image: linear-gradient(135deg, rgba(255,255,255,.05), transparent 42%); }
 
 @media (min-width: 900px) {
+    .nav-links {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        display: flex;
+        width: auto;
+        margin-left: auto;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, -50%);
+    }
+    .nav-links::before { display: none; }
+    .menu-toggle { display: none; }
+    .nav-link-btn { min-height: 34px; padding: 0 10px; border-radius: 8px; font-size: 12px; }
+    .nav-link-btn.active::before { display: none; }
     .hero-grid { grid-template-columns: 1.2fr 0.8fr; }
     .story-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .color-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -1485,7 +1508,7 @@ section.container[aria-label="Featured palettes preview"] {
 
 @media (max-width: 899px) {
     .nav-row { align-items: center; gap: 8px; padding: 12px 0; }
-    .header-actions { margin-left: auto; order: 2; }
+    .header-actions { margin-left: auto; order: 3; }
     .header-search { width: clamp(100px, 28vw, 150px); }
     .menu-toggle { display: grid; }
     .nav-links {
@@ -1498,7 +1521,7 @@ section.container[aria-label="Featured palettes preview"] {
     }
     .featured-grid, .palette-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .nav-link-btn { width: 100%; padding: 11px 12px; text-align: left; font-size: 13px; }
-    .account-btn { order: 3; max-width: 128px; padding: 0 10px; font-size: 11px; }
+    .account-btn { order: 4; max-width: 86px; padding: 0 9px; font-size: 11px; }
     .palette-view-tabs { display: grid; width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .brand-name { display: none; }
     .section-heading { align-items: flex-start; flex-direction: column; gap: 6px; }
@@ -1553,7 +1576,8 @@ section.container[aria-label="Featured palettes preview"] {
     .header-search input { position: absolute; right: 0; width: min(58vw, 210px); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
     .header-search:focus-within input { opacity: 1; pointer-events: auto; }
     .header-search span { left: 11px; z-index: 1; }
-    .cart-btn { display: none; }
+    .site-header.is-scrolled { background: rgba(250, 248, 245, 0.98); }
+    .account-btn { max-width: 72px; }
     .hero-panel { min-height: 220px; padding: 14px; border-radius: 22px; }
     .panel-grid { gap: 6px; }
     .panel-swatch { min-height: 54px; border-radius: 12px; }
