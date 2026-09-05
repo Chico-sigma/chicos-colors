@@ -28,11 +28,8 @@ function publicUser(user) {
 async function register(request, response, next) {
   try {
     const { name, email, password } = request.body;
-    if (typeof name !== "string" || typeof email !== "string" || typeof password !== "string" || !name.trim() || !email.trim() || !password) {
+    if (!name || !email || !password) {
       return response.status(400).json({ message: "Name, email, and password are required." });
-    }
-    if (name.trim().length > 80 || email.trim().length > 160) {
-      return response.status(400).json({ message: "Name or email is too long." });
     }
     if (password.length < 8) {
       return response.status(400).json({ message: "Password must be at least 8 characters long." });
@@ -45,7 +42,7 @@ async function register(request, response, next) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    const user = await User.create({ name: name.trim(), email: normalizedEmail, password: hashedPassword });
+    const user = await User.create({ name, email: normalizedEmail, password: hashedPassword });
     response.status(201).json({ token: createToken(user), user: publicUser(user) });
   } catch (error) {
     next(error);
@@ -55,7 +52,7 @@ async function register(request, response, next) {
 async function login(request, response, next) {
   try {
     const { email, password } = request.body;
-    if (typeof email !== "string" || typeof password !== "string" || !email.trim() || !password) {
+    if (!email || !password) {
       return response.status(400).json({ message: "Email and password are required." });
     }
 
@@ -77,25 +74,19 @@ async function getProfile(request, response) {
 
 async function toggleFavorite(request, response, next) {
   try {
-    const { type, itemId, name, hex, colors } = request.body;
-    if (!["color", "palette"].includes(type) || typeof itemId !== "string" || !itemId.trim() || itemId.length > 120) {
+    const { type, itemId, name, hex } = request.body;
+    if (!["color", "palette"].includes(type) || !itemId) {
       return response.status(400).json({ message: "Favorite type and itemId are required." });
     }
     if (hex && !/^#[0-9a-f]{6}$/i.test(hex)) {
       return response.status(400).json({ message: "Favorite HEX must be a six-digit color value." });
-    }
-    if (name !== undefined && (typeof name !== "string" || name.length > 120)) {
-      return response.status(400).json({ message: "Favorite name is invalid." });
-    }
-    if (colors !== undefined && (!Array.isArray(colors) || colors.length > 20 || colors.some((color) => typeof color !== "string" || !/^#[0-9a-f]{6}$/i.test(color)))) {
-      return response.status(400).json({ message: "Favorite palette colors are invalid." });
     }
 
     const favoriteIndex = request.user.favorites.findIndex((favorite) => favorite.type === type && favorite.itemId === itemId);
     if (favoriteIndex >= 0) {
       request.user.favorites.splice(favoriteIndex, 1);
     } else {
-      request.user.favorites.push({ type, itemId: itemId.trim(), name, hex, colors });
+      request.user.favorites.push({ type, itemId, name, hex });
     }
 
     await request.user.save();
