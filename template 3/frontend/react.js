@@ -1461,7 +1461,7 @@ function App() {
                   <p className="eyebrow">Moroccan color stories</p>
                   <h1>Discover colors <em>inspired by Morocco.</em></h1>
                   <p className="hero-copy">
-                    A modern color library for thoughtful design, shaped by Atlantic light, desert warmth, garden blues, and the geometry of handmade craft.
+                    Discover rich palettes shaped by Moroccan landscapes, artisan craft, and timeless color stories, translated into a precise modern toolkit for digital design.
                   </p>
                   <div className="cta-row">
                     <button type="button" className="primary-btn" onClick={() => setActiveView("palettes")}>Explore palettes</button>
