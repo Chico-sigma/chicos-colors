@@ -7,6 +7,7 @@ const allowedOrigins = [...new Set([
 const express = require("express");
 const cors = require("cors");
 const { GoogleGenAI, Type } = require("@google/genai");
+const mongoose = require("mongoose");
 const connectDatabase = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const exportRoutes = require("./routes/exportRoutes");
@@ -14,6 +15,20 @@ const { rateLimit } = require("express-rate-limit");
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
+let databaseConnection;
+
+async function ensureDatabaseConnection(_request, _response, next) {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      databaseConnection ||= connectDatabase();
+      await databaseConnection;
+    }
+    next();
+  } catch (error) {
+    databaseConnection = null;
+    next(error);
+  }
+}
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json({ limit: "10kb" }));
@@ -83,8 +98,8 @@ app.post("/api/generate-palette", paletteGenerationLimiter, async (request, resp
   }
 });
 
-app.use("/api/auth", authRoutes);
-app.use("/api/export", exportRoutes);
+app.use("/api/auth", ensureDatabaseConnection, authRoutes);
+app.use("/api/export", ensureDatabaseConnection, exportRoutes);
 
 app.use((request, response) => {
   response.status(404).json({ message: `Route not found: ${request.method} ${request.originalUrl}` });

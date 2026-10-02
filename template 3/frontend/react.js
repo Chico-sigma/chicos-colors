@@ -1,4 +1,70 @@
-const { useEffect, useId, useMemo, useRef, useState } = React;
+const { useContext, useEffect, useId, useMemo, useRef, useState } = React;
+
+const THEME_STORAGE_KEY = "chicos-theme";
+const ThemeContext = React.createContext(null);
+
+function getSystemTheme() {
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function getInitialThemePreference() {
+  const storedTheme = readStored(THEME_STORAGE_KEY, "system");
+  return ["light", "dark", "system"].includes(storedTheme) ? storedTheme : "system";
+}
+
+function ThemeProvider({ children }) {
+  const [preference, setPreference] = useState(getInitialThemePreference);
+  const [systemTheme, setSystemTheme] = useState(getSystemTheme);
+  const theme = preference === "system" ? systemTheme : preference;
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    writeStored(THEME_STORAGE_KEY, preference);
+  }, [preference, theme]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
+    if (!mediaQuery) return undefined;
+    const updateSystemTheme = (event) => setSystemTheme(event.matches ? "dark" : "light");
+    mediaQuery.addEventListener?.("change", updateSystemTheme);
+    mediaQuery.addListener?.(updateSystemTheme);
+    return () => {
+      mediaQuery.removeEventListener?.("change", updateSystemTheme);
+      mediaQuery.removeListener?.(updateSystemTheme);
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleStorage(event) {
+      if (event.key !== THEME_STORAGE_KEY || event.newValue === null) return;
+      try {
+        const storedTheme = JSON.parse(event.newValue);
+        if (["light", "dark", "system"].includes(storedTheme)) setPreference(storedTheme);
+      } catch (error) {
+        setPreference("system");
+      }
+    }
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  function setTheme(nextTheme) {
+    setPreference((currentPreference) => {
+      const currentTheme = currentPreference === "system" ? systemTheme : currentPreference;
+      const requestedTheme = typeof nextTheme === "function" ? nextTheme(currentTheme) : nextTheme;
+      return ["light", "dark", "system"].includes(requestedTheme) ? requestedTheme : currentPreference;
+    });
+  }
+
+  return <ThemeContext.Provider value={{ theme, setTheme, preference }}>{children}</ThemeContext.Provider>;
+}
+
+function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) throw new Error("useTheme must be used within ThemeProvider.");
+  return context;
+}
 
 const COLOR_LIBRARY = [
   { id: "majorelle-blue", name: "Majorelle Blue", hex: "#3F5AA8", tag: "Architecture", location: "Marrakech riads" },
@@ -249,10 +315,6 @@ function getExpandedSearchGroups(query) {
   });
 }
 
-function getExpandedSearchTerms(query) {
-  return [...new Set(getExpandedSearchGroups(query).flat())];
-}
-
 function matchesColorSearch(searchableValue, query) {
   const normalizedText = normalizeSearchText(searchableValue);
   const groups = getExpandedSearchGroups(query);
@@ -277,16 +339,6 @@ const AI_QUICK_PROMPTS = [
   "Give me accessible high-contrast colors for a dark-mode dashboard.",
   "Palette for a modern tech startup in Meknes."
 ];
-
-function getAssistantPalette(prompt) {
-  const normalizedPrompt = prompt.toLowerCase();
-  const paletteIds = normalizedPrompt.includes("dark") || normalizedPrompt.includes("contrast")
-    ? ["obsidian-night", "cloud-cream", "neon-voltage", "eclipse-blue", "platinum-mist"]
-    : normalizedPrompt.includes("tech") || normalizedPrompt.includes("startup") || normalizedPrompt.includes("meknes")
-      ? ["cyber-teal", "plasma-blue", "chrome-blue", "cloud-cream", "copper-rose"]
-      : ["saffron-sunset", "riad-coral", "clay-patio", "ivory-tile", "teal-tide"];
-  return paletteIds.map((id) => COLOR_LIBRARY.find((color) => color.id === id)).filter(Boolean);
-}
 
 function AIColorAssistant({ onApplyHarmony }) {
   const [prompt, setPrompt] = useState("");
@@ -569,6 +621,43 @@ function MoroccanPattern({ className = "" }) {
   );
 }
 
+function BrandMonogram({ className = "" }) {
+  return (
+    <svg className={className} viewBox="0 0 100 100" fill="currentColor" aria-hidden="true" focusable="false">
+      <path d="M50 3 61 20 80 20 80 39 97 50 80 61 80 80 61 80 50 97 39 80 20 80 20 61 3 50 20 39 20 20 39 20Z" fill="none" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M50 13 57 26 73 26 73 42 87 50 73 58 73 74 57 74 50 87 43 74 27 74 27 58 13 50 27 42 27 26 43 26Z" fill="none" stroke="currentColor" strokeWidth="1.5" opacity=".55" />
+      <text x="17" y="66" fontFamily="Georgia,serif" fontSize="52" fontWeight="600">C</text>
+      <text x="41" y="72" fontFamily="Georgia,serif" fontSize="55" fontWeight="600">R</text>
+      <path d="m50 28 3 5-3 5-3-5 3-5Zm0 34 3 5-3 5-3-5 3-5Z" />
+    </svg>
+  );
+}
+
+function BrandLogoFull({ className = "" }) {
+  return (
+    <svg className={className} viewBox="0 0 360 420" fill="currentColor" role="img" aria-label="Chico's Colors, Inspired by Morocco">
+      <path d="M180 18 202 56 242 56 242 96 280 120 242 144 242 184 202 184 180 222 158 184 118 184 118 144 80 120 118 96 118 56 158 56Z" fill="none" stroke="currentColor" strokeWidth="6" strokeLinejoin="round" />
+      <path d="M180 40 194 70 224 70 224 100 253 120 224 140 224 170 194 170 180 200 166 170 136 170 136 140 107 120 136 100 136 70 166 70Z" fill="none" stroke="currentColor" strokeWidth="2.5" opacity=".55" />
+      <text x="110" y="146" fontFamily="Georgia,serif" fontSize="92" fontWeight="600">C</text>
+      <text x="168" y="160" fontFamily="Georgia,serif" fontSize="98" fontWeight="600">R</text>
+      <path d="m180 62 7 12-7 12-7-12 7-12Zm0 80 7 12-7 12-7-12 7-12Z" />
+      <text x="180" y="292" fontFamily="Georgia,serif" fontSize="28" letterSpacing="4" textAnchor="middle">CHICO'S COLORS</text>
+      <path d="M112 318h48m40 0h48" stroke="currentColor" strokeWidth="1.5" />
+      <path d="m180 310 7 8-7 8-7-8 7-8Z" />
+      <text x="180" y="350" fontFamily="Arial,sans-serif" fontSize="13" letterSpacing="4" textAnchor="middle">INSPIRED BY MOROCCO</text>
+    </svg>
+  );
+}
+
+function BrandStarDivider({ className = "" }) {
+  return (
+    <svg className={className} viewBox="0 0 100 100" fill="currentColor" aria-hidden="true" focusable="false">
+      <path d="M50 3 61 20 80 20 80 39 97 50 80 61 80 80 61 80 50 97 39 80 20 80 20 61 3 50 20 39 20 20 39 20Z" fill="none" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
+      <path d="m50 25 25 25-25 25-25-25 25-25Zm0 11L36 50l14 14 14-14-14-14Z" fillRule="evenodd" />
+    </svg>
+  );
+}
+
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 function readStored(key, fallback = []) {
@@ -790,31 +879,6 @@ function ColorCard({ color, isFavorite, onToggle, onCopy, onOpen }) {
   );
 }
 
-function PaletteCard({ palette, isFavorite, onToggle, onCopy, onOpen, onExport }) {
-  const colors = palette.colors.map((value) => ({ hex: getColorHex(value), name: COLOR_LIBRARY.find((color) => color.id === value)?.name || value }));
-
-  return (
-    <article className="palette-card editorial-palette-card">
-      <div className="palette-card-head">
-        <div>
-          <p className="palette-kicker">{palette.category}</p>
-          <h3>{palette.name}</h3>
-        </div>
-        <button type="button" className={`palette-heart ${isFavorite ? "is-active" : ""}`} aria-pressed={isFavorite} aria-label={`${isFavorite ? "Remove" : "Add"} ${palette.name} ${isFavorite ? "from" : "to"} favorites`} onClick={() => onToggle(palette.id)}>{isFavorite ? "♥" : "♡"}</button>
-      </div>
-      <p className="palette-desc">{palette.description}</p>
-      <div className="editorial-palette-preview" aria-label={`${palette.name} color preview`}>
-        {colors.map((color, index) => <button key={`${palette.id}-${index}`} type="button" className="editorial-swatch" style={{ backgroundColor: color.hex }} onClick={() => onOpen({ id: `${palette.id}-${index}`, name: color.name, hex: color.hex, location: `${palette.name} palette` })} aria-label={`View ${color.name}, ${color.hex}`}><span>{color.hex}</span></button>)}
-      </div>
-      <div className="palette-card-footer">
-        <button type="button" className="palette-text-action" onClick={() => onCopy(palette)}>Copy HEX</button>
-        <button type="button" className="palette-text-action" onClick={() => onOpen(palette)}>View palette</button>
-        <label className="palette-export-label"><span className="sr-only">Export palette</span><select defaultValue="" onChange={(event) => { onExport(palette, event.target.value); event.target.value = ""; }} aria-label={`Export ${palette.name}`}><option value="" disabled>Export</option><option value="hex">HEX</option><option value="tailwind">Tailwind</option><option value="figma">Figma JSON</option><option value="css-root">CSS variables</option></select></label>
-      </div>
-    </article>
-  );
-}
-
 function Favorites({ savedColors, savedPalettes, savedCustomColors, savedCustomPalettes, onRemoveColor, onRemovePalette, onRemoveCustomColor, onRemoveCustomPalette, onExportPalette }) {
   const items = [
     ...savedColors.map((color) => ({ id: color.id, label: color.name, code: color.hex, swatch: color.hex, type: "color" })),
@@ -948,6 +1012,7 @@ function AuthModal({ onClose, onAuthenticated }) {
 }
 
 function App() {
+  const { theme, setTheme } = useTheme();
   const [activeView, setActiveView] = useState("gallery");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [galleryQuery, setGalleryQuery] = useState("");
@@ -975,17 +1040,11 @@ function App() {
   const [isImageDragging, setIsImageDragging] = useState(false);
   const [imageError, setImageError] = useState("");
   const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedPalette, setSelectedPalette] = useState(null);
   const [copiedColorId, setCopiedColorId] = useState(null);
   const [authToken, setAuthToken] = useState(() => readStored(AUTH_TOKEN_KEY, ""));
   const [currentUser, setCurrentUser] = useState(() => readStored(AUTH_USER_KEY, null));
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
-  const [theme, setTheme] = useState(() => {
-    const storedTheme = readStored("chicos-theme", "");
-    if (storedTheme === "light" || storedTheme === "dark") return storedTheme;
-    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  });
   const headerRef = useRef(null);
 
   function navigateTo(view) {
@@ -1010,11 +1069,6 @@ function App() {
   }, [customPaletteFavorites]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    writeStored("chicos-theme", theme);
-  }, [theme]);
-
-  useEffect(() => {
     function updateHeaderState() {
       setIsHeaderScrolled(window.scrollY > 12);
     }
@@ -1032,7 +1086,7 @@ function App() {
       const city = CITY_PALETTES.find((entry) => entry.id === favorite.itemId);
       if (city) return { id: city.id, name: city.name, colors: city.colors };
       if (favorite.colors?.length) return { id: favorite.itemId, name: favorite.name || "Saved palette", colors: favorite.colors };
-      if (favorite.itemId === "image-extract" && imagePalette) return imagePalette;
+      if (favorite.itemId.startsWith("image-extract") && imagePalette) return imagePalette;
       return customPaletteFavorites.find((palette) => palette.id === favorite.itemId) || null;
     }).filter(Boolean));
   }
@@ -1221,14 +1275,6 @@ function App() {
     setCustomHarmonyHex(getColorHex(colorId));
     setHarmonyHexDraft(getColorHex(colorId));
     setHarmonyHsl(hexToHsl(getColorHex(colorId)));
-  }
-
-  function openPaletteOrColor(item) {
-    if (item?.colors) {
-      setSelectedPalette(item);
-      return;
-    }
-    setSelectedColor(item);
   }
 
   function applyAssistantHarmony(hex) {
@@ -1448,7 +1494,7 @@ function App() {
           });
         while (colors.length < 5) colors.push(colors[colors.length - 1] || "#D9D9D9");
         setImageName(file.name);
-        setImagePalette({ id: "image-extract", name: "Extracted Palette", colors, description: `Five dominant colors sampled from ${file.name}.` });
+        setImagePalette({ id: `image-extract-${Date.now()}`, name: "Extracted Palette", colors, description: `Five dominant colors sampled from ${file.name}.` });
       };
       image.src = event.target.result;
     };
@@ -1488,7 +1534,7 @@ function App() {
       <header className={`site-header${isHeaderScrolled ? " is-scrolled" : ""}`} ref={headerRef}>
         <div className="container nav-row">
           <a className="brand" href="#top" onClick={() => navigateTo("gallery")}>
-            <span className="brand-mark">C</span>
+            <BrandMonogram className="brand-mark" />
             <span className="brand-name">Chico's <span>Colors</span></span>
           </a>
 
@@ -1597,6 +1643,8 @@ function App() {
                         color={color}
                         isFavorite={favoriteColorIds.includes(color.id)}
                         onToggle={toggleColorFavorite}
+                        onCopy={copyColorHex}
+                        onOpen={setSelectedColor}
                         onCopy={copyColorHex}
                         onOpen={setSelectedColor}
                       />
@@ -2024,10 +2072,15 @@ function App() {
 
       <footer className="site-footer">
         <MoroccanPattern className="footer-pattern" />
-        <div className="container"><strong>Chico's Colors</strong><span>Moroccan-inspired color discovery</span><small>Made with care in Morocco · Built for curious eyes</small></div>
+        <div className="container">
+          <BrandLogoFull className="footer-brand-logo" />
+          <BrandStarDivider className="footer-star-divider" />
+          <span>Inspired by Morocco</span>
+          <small>Made with care in Morocco · Built for curious eyes</small>
+        </div>
       </footer>
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(<ThemeProvider><App /></ThemeProvider>);

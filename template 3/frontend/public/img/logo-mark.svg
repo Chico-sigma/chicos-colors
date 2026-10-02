@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor" role="img" aria-label="Chico's Colors C and R monogram framed by an eight-point Moroccan star">
+  <path d="M50 3 61 20 80 20 80 39 97 50 80 61 80 80 61 80 50 97 39 80 20 80 20 61 3 50 20 39 20 20 39 20Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M50 13 57 26 73 26 73 42 87 50 73 58 73 74 57 74 50 87 43 74 27 74 27 58 13 50 27 42 27 26 43 26Z" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".55"/>
+  <text x="17" y="66" font-family="Georgia,serif" font-size="52" font-weight="600">C</text>
+  <text x="41" y="72" font-family="Georgia,serif" font-size="55" font-weight="600">R</text>
+  <path d="m50 28 3 5-3 5-3-5 3-5Zm0 34 3 5-3 5-3-5 3-5Z"/>
+</svg>
