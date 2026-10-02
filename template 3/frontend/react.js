@@ -1659,8 +1659,6 @@ function App() {
                         onToggle={toggleColorFavorite}
                         onCopy={copyColorHex}
                         onOpen={setSelectedColor}
-                        onCopy={copyColorHex}
-                        onOpen={setSelectedColor}
                       />
                     ))}
                   </div>
