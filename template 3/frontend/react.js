@@ -214,6 +214,7 @@ const FEATURED_COLOR_IDS = [
 const FEATURED_COLORS = FEATURED_COLOR_IDS.map((id) => COLOR_LIBRARY.find((color) => color.id === id)).filter(Boolean);
 const MOROCCAN_COLOR_IDS = ["souk-spice", "majorelle-blue", "dune-sand", "atlas-cedar", "archway-teal", "mint-tea", "riad-coral"];
 const MOROCCAN_COLORS = MOROCCAN_COLOR_IDS.map((id) => COLOR_LIBRARY.find((color) => color.id === id)).filter(Boolean);
+const COLOR_OF_DAY = MOROCCAN_COLORS[Math.floor(Date.now() / 86400000) % MOROCCAN_COLORS.length];
 
 const COLOR_FAMILY_MAP = {
   blue: ["blue", "bleu", "azraq", "cyan", "indigo", "navy", "sky", "cobalt", "majorelle", "turquoise", "azure", "teal", "aqua", "cerulean", "lagoon"],
@@ -1583,19 +1584,24 @@ function App() {
       <main>
         {activeView === "gallery" && (
           <>
-            <section className="hero">
+            <section className="hero" id="top">
               <MoroccanPattern className="hero-pattern" />
               <div className="container hero-grid">
                 <div>
-                  <p className="eyebrow">Moroccan color stories</p>
-                  <h1>Discover colors <em>inspired by Morocco.</em></h1>
+                  <p className="eyebrow">Inspired by Morocco</p>
+                  <h1>Colors carry stories. <em>Morocco has thousands.</em></h1>
                   <p className="hero-copy">
-                    Discover rich palettes shaped by Moroccan landscapes, artisan craft, and timeless color stories, translated into a precise modern toolkit for digital design.
+                    A modern color library shaped by Moroccan light, material, and making. Find a shade, build a palette, and carry its character into your next design.
                   </p>
                   <div className="cta-row">
-                    <button type="button" className="primary-btn" onClick={() => setActiveView("palettes")}>Explore palettes</button>
-                    <button type="button" className="secondary-btn" onClick={() => setActiveView("builder")}>Create harmony</button>
+                    <button type="button" className="primary-btn" onClick={() => openColorCollection("colors", "morocco")}>Explore the colors <span aria-hidden="true">→</span></button>
+                    <button type="button" className="secondary-btn" onClick={() => navigateTo("extract")}>Extract from an image</button>
                   </div>
+                  <button type="button" className="color-day" onClick={() => setSelectedColor(COLOR_OF_DAY)} aria-label={`Color of the day: ${COLOR_OF_DAY.name}, ${COLOR_OF_DAY.hex}. Open details`}>
+                    <span className="color-day-swatch" style={{ backgroundColor: COLOR_OF_DAY.hex }} aria-hidden="true"></span>
+                    <span className="color-day-copy"><small>Color of the day</small><strong>{COLOR_OF_DAY.name}</strong><span>{COLOR_OF_DAY.location}</span></span>
+                    <span className="color-day-hex">{COLOR_OF_DAY.hex}</span>
+                  </button>
                   <div className="stats">
                     <div className="stat-box">
                       <strong>{FEATURED_COLORS.length}</strong>
@@ -1612,12 +1618,9 @@ function App() {
                   </div>
                 </div>
 
-                <div className="hero-panel" aria-label="Featured palette preview">
-                  <div className="panel-grid">
-                    {COLOR_LIBRARY.slice(0, 5).map((color) => (
-                      <div key={color.id} className="panel-swatch" style={{ backgroundColor: color.hex }} title={`${color.name}: ${color.hex}`} />
-                    ))}
-                  </div>
+                <div className="hero-visual">
+                  <img src="/assets/Gemini_Generated_Image_adxgv3adxgv3adxg.webp" alt="Chico's Colors full logo in deep green and bronze, Inspired by Morocco" width="1000" height="1000" fetchPriority="high" />
+                  <span className="hero-visual-caption"><BrandStar /> Materials, light, and line</span>
                 </div>
               </div>
             </section>
@@ -1720,6 +1723,18 @@ function App() {
                     </div>
                   </article>
                 ))}
+              </div>
+            </section>
+
+            <section className="home-tool-previews" aria-label="Explore the studio">
+              <div className="container">
+                <div className="section-heading"><div><p className="eyebrow">A color practice</p><h2>From reference to repeatable system</h2></div><span className="section-meta">Four ways in</span></div>
+                <div className="home-tool-grid">
+                  <button type="button" onClick={() => openColorCollection("colors", "morocco")}><span>01</span><strong>Colors</strong><small>Browse shades from Morocco and beyond.</small><b aria-hidden="true">↗</b></button>
+                  <button type="button" onClick={() => navigateTo("extract")}><span>02</span><strong>Extract</strong><small>Read a five-color study from your image.</small><b aria-hidden="true">↗</b></button>
+                  <button type="button" onClick={() => navigateTo("assistant")}><span>03</span><strong>AI Assistant</strong><small>Turn a mood or place into a palette brief.</small><b aria-hidden="true">↗</b></button>
+                  <button type="button" onClick={() => navigateTo("patterns")}><span>04</span><strong>Pattern Lab</strong><small>Build a repeat from zellige geometry.</small><b aria-hidden="true">↗</b></button>
+                </div>
               </div>
             </section>
           </>
