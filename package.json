@@ -1,0 +1,12 @@
+{
+  "name": "chicos-colors-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static frontend deployment for Chico's Colors",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node build.js"
+  }
+}
