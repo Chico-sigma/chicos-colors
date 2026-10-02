@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" role="img" aria-label="Eight-point zellige star">
+  <path d="M50 3 61 20 80 20 80 39 97 50 80 61 80 80 61 80 50 97 39 80 20 80 20 61 3 50 20 39 20 20 39 20Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+  <path d="m50 25 25 25-25 25-25-25 25-25Zm0 11L36 50l14 14 14-14-14-14Z" fill="currentColor" fill-rule="evenodd"/>
+</svg>
