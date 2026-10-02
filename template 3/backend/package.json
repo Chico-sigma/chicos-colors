@@ -5,7 +5,8 @@
   "description": "Express and MongoDB API for Chico's Colors",
   "main": "server.js",
   "scripts": {
-    "dev": "node --watch dev.js"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
   "engines": {
     "node": ">=20"
