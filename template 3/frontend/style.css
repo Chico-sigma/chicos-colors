@@ -1591,12 +1591,14 @@ section.container[aria-label="Featured palettes preview"] {
 
 @media (min-width: 1100px) {
     .nav-links {
-        position: absolute;
-        top: 50%;
-        left: 50%;
+        position: relative;
+        top: auto;
+        left: auto;
         display: flex;
         width: auto;
-        margin-left: auto;
+        flex: 1 1 auto;
+        justify-content: center;
+        margin-left: 0;
         padding: 0;
         border: 0;
         border-radius: 0;
@@ -1604,10 +1606,11 @@ section.container[aria-label="Featured palettes preview"] {
         box-shadow: none;
         opacity: 1;
         pointer-events: auto;
-        transform: translate(-50%, -50%);
+        transform: none;
     }
     .nav-links::before { display: none; }
     .menu-toggle { display: none; }
+    .account-btn { order: 5; }
     .nav-link-btn { min-height: 44px; padding: 0 9px; border-radius: 4px; font-size: 12px; }
     .nav-link-btn.active::before { display: none; }
     .hero-grid { grid-template-columns: 1.2fr 0.8fr; }
