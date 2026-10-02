@@ -14,6 +14,18 @@ const { rateLimit } = require("express-rate-limit");
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
+let databaseConnection;
+
+async function ensureDatabaseConnection(_request, _response, next) {
+  try {
+    databaseConnection ||= connectDatabase();
+    await databaseConnection;
+    next();
+  } catch (error) {
+    databaseConnection = null;
+    next(error);
+  }
+}
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json({ limit: "10kb" }));
@@ -83,8 +95,8 @@ app.post("/api/generate-palette", paletteGenerationLimiter, async (request, resp
   }
 });
 
-app.use("/api/auth", authRoutes);
-app.use("/api/export", exportRoutes);
+app.use("/api/auth", ensureDatabaseConnection, authRoutes);
+app.use("/api/export", ensureDatabaseConnection, exportRoutes);
 
 app.use((request, response) => {
   response.status(404).json({ message: `Route not found: ${request.method} ${request.originalUrl}` });
@@ -106,7 +118,9 @@ async function startServer() {
     throw new Error("Set a JWT_SECRET with at least 32 characters in backend/.env before starting the API.");
   }
 
-  await connectDatabase();
+  await new Promise((resolve, reject) => {
+    ensureDatabaseConnection(null, null, (error) => error ? reject(error) : resolve());
+  });
   app.listen(port, () => console.log(`Chico's Colors API is running at http://localhost:${port}`));
 }
 

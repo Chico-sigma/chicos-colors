@@ -753,7 +753,7 @@ function SearchBar({ query, onChange, placeholder }) {
 
 function ColorCard({ color, isFavorite, onToggle, onCopy, onOpen }) {
   return (
-    <article className="color-card" style={{ backgroundColor: color.hex }}>
+    <article className="color-card" style={{ backgroundColor: color.hex, "--card-text": getReadableTextColor(color.hex) }}>
       <div className="card-top">
         <div>
           <h3 className="color-name">{color.name}</h3>
@@ -1446,7 +1446,7 @@ function App() {
           });
         while (colors.length < 5) colors.push(colors[colors.length - 1] || "#D9D9D9");
         setImageName(file.name);
-        setImagePalette({ id: "image-extract", name: "Extracted Palette", colors, description: `Five dominant colors sampled from ${file.name}.` });
+        setImagePalette({ id: `image-extract-${Date.now()}`, name: "Extracted Palette", colors, description: `Five dominant colors sampled from ${file.name}.` });
       };
       image.src = event.target.result;
     };
@@ -1595,6 +1595,8 @@ function App() {
                         color={color}
                         isFavorite={favoriteColorIds.includes(color.id)}
                         onToggle={toggleColorFavorite}
+                        onCopy={copyColorHex}
+                        onOpen={setSelectedColor}
                         onCopy={copyColorHex}
                         onOpen={setSelectedColor}
                       />
@@ -1760,7 +1762,7 @@ function App() {
                         <button type="button" className="copy-btn" onClick={() => copyPaletteHexes(palette)}>Copy All Hex Codes</button>
                         <label className="export-control">
                           <span>Export</span>
-                          <select defaultValue="" onChange={(event) => { if (event.target.value) exportHarmony(event.target.value); event.target.value = ""; }} aria-label="Export design system tokens">
+                          <select defaultValue="" onChange={(event) => { const format = event.target.value; if (format === "png") exportBrandCard(palette, "png"); else if (format) exportPalette(palette, format); event.target.value = ""; }} aria-label={`Export ${palette.name}`}>
                             <option value="" disabled>Design export</option>
                             <option value="tailwind">Tailwind CSS Config</option>
                             <option value="figma">Figma JSON Tokens</option>
@@ -1890,11 +1892,11 @@ function App() {
                   </div>
                   <div className="harmony-swatch-row">
                     {simulatedHarmonyColors.map((colorHex, index) => (
-                      <div key={`${colorHex}-${index}`} className={`harmony-swatch${lockedHarmonyColors[index] ? " is-locked" : ""}`} role="button" tabIndex="0" style={{ backgroundColor: colorHex }} onClick={() => toggleHarmonyLock(index)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggleHarmonyLock(index); } }} title={`${colorHex} - ${lockedHarmonyColors[index] ? "Locked" : "Click to lock"}`} aria-label={`${lockedHarmonyColors[index] ? "Unlock" : "Lock"} harmony color ${index + 1}`}>
+                      <div key={`${colorHex}-${index}`} className={`harmony-swatch${lockedHarmonyColors[index] ? " is-locked" : ""}`} style={{ backgroundColor: colorHex }}>
                         <span className="harmony-label">{index + 1}</span>
                         <span className="harmony-hex-label">{colorHex}</span>
-                        <span className="harmony-lock">{lockedHarmonyColors[index] ? "LOCKED" : "LOCK"}</span>
-                        <button type="button" className={`harmony-favorite${customFavorites.some((favorite) => favorite.id === `harmony-${colorHex.slice(1).toLowerCase()}`) ? " is-active" : ""}`} onClick={(event) => { event.stopPropagation(); toggleCustomFavorite(colorHex, `${harmonyRule} color ${index + 1}`); }} aria-label="Save generated harmony color">♥</button>
+                        <button type="button" className="harmony-lock" onClick={() => toggleHarmonyLock(index)} aria-pressed={Boolean(lockedHarmonyColors[index])} aria-label={`${lockedHarmonyColors[index] ? "Unlock" : "Lock"} harmony color ${index + 1}`}>{lockedHarmonyColors[index] ? "LOCKED" : "LOCK"}</button>
+                        <button type="button" className={`harmony-favorite${customFavorites.some((favorite) => favorite.id === `harmony-${colorHex.slice(1).toLowerCase()}`) ? " is-active" : ""}`} onClick={() => toggleCustomFavorite(colorHex, `${harmonyRule} color ${index + 1}`)} aria-label={`Save harmony color ${index + 1}`}>♥</button>
                       </div>
                     ))}
                   </div>
