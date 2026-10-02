@@ -1,14 +1,16 @@
 require("dotenv").config();
-const allowedOrigins = (process.env.CLIENT_ORIGIN || "http://localhost:3000")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = [...new Set([
+  "https://chicos-colors.vercel.app",
+  "http://localhost:3000",
+  ...(process.env.CLIENT_ORIGIN || "").split(",").map((origin) => origin.trim())
+])];
 const express = require("express");
 const cors = require("cors");
 const { GoogleGenAI, Type } = require("@google/genai");
 const connectDatabase = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const exportRoutes = require("./routes/exportRoutes");
+const { rateLimit } = require("express-rate-limit");
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
@@ -26,7 +28,15 @@ app.get("/api/health", (_request, response) => {
   response.json({ status: "ok", service: "chicos-colors-api" });
 });
 
-app.post("/api/generate-palette", async (request, response) => {
+const paletteGenerationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { message: "Palette generation is temporarily rate limited. Try again shortly." }
+});
+
+app.post("/api/generate-palette", paletteGenerationLimiter, async (request, response) => {
   const prompt = typeof request.body?.prompt === "string" ? request.body.prompt.trim() : "";
   if (!prompt) return response.status(400).json({ message: "A palette prompt is required." });
   if (prompt.length > 500) return response.status(400).json({ message: "Palette prompts must be 500 characters or fewer." });

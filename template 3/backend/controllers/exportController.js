@@ -23,7 +23,7 @@ async function exportUsers(request, response, next) {
 
     users.forEach((user) => {
       worksheet.addRow({
-        name: user.name,
+        name: escapeHtml(user.name),
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,
