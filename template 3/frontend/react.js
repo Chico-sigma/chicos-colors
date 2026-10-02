@@ -201,6 +201,14 @@ const COLOR_LIBRARY = [
   { id: "metallic-graphite", name: "Metallic Graphite", hex: "#4B5054", tag: "Luxury Metallic", location: "Design studio" },
   { id: "gothic-ink", name: "Gothic Ink", hex: "#1F2633", tag: "Dark Gothic", location: "Sealed archive" },
   { id: "gothic-ivy", name: "Gothic Ivy", hex: "#344E41", tag: "Dark Gothic", location: "Ruined cloister" },
+  { id: "moroccan-red", name: "Moroccan Red", hex: "#A83D2C", tag: "Moroccan Colors", location: "Inspired by warm clay and sunlit walls" },
+  { id: "sahara-sand", name: "Sahara Sand", hex: "#D8BA8D", tag: "Moroccan Colors", location: "Inspired by desert light" },
+  { id: "atlas-green", name: "Atlas Green", hex: "#4C6B50", tag: "Moroccan Colors", location: "Inspired by mountain cedar" },
+  { id: "zellige-green", name: "Zellige Green", hex: "#2F7775", tag: "Moroccan Colors", location: "Inspired by glazed tile" },
+  { id: "ocean-blue", name: "Atlantic Blue", hex: "#286B83", tag: "Moroccan Colors", location: "Inspired by the Atlantic coast" },
+  { id: "mint-tea-inspired", name: "Mint Tea", hex: "#9ACCB0", tag: "Moroccan Colors", location: "Inspired by a cool courtyard pour" },
+  { id: "marrakech-sunset", name: "Marrakech Sunset", hex: "#D96C55", tag: "Moroccan Colors", location: "Inspired by evening terracotta" },
+  { id: "majorelle-inspired", name: "Majorelle Blue", hex: "#3F5AA8", tag: "Moroccan Colors", location: "Inspired by vivid garden blue" }
 ];
 
 const CATEGORY_OPTIONS = ["All", "Architecture", "Nature", "Crafts", "Coastal", "Cyberpunk Neon", "Soft Pastel", "Earthy Nature", "Luxury Metallic", "Dark Gothic"];
@@ -212,9 +220,8 @@ const FEATURED_COLOR_IDS = [
   "obsidian-night", "velvet-crimson", "eclipse-blue", "poison-ivy"
 ];
 const FEATURED_COLORS = FEATURED_COLOR_IDS.map((id) => COLOR_LIBRARY.find((color) => color.id === id)).filter(Boolean);
-const MOROCCAN_COLOR_IDS = ["souk-spice", "majorelle-blue", "dune-sand", "atlas-cedar", "archway-teal", "mint-tea", "riad-coral"];
+const MOROCCAN_COLOR_IDS = ["moroccan-red", "majorelle-inspired", "sahara-sand", "atlas-green", "zellige-green", "ocean-blue", "mint-tea-inspired", "marrakech-sunset"];
 const MOROCCAN_COLORS = MOROCCAN_COLOR_IDS.map((id) => COLOR_LIBRARY.find((color) => color.id === id)).filter(Boolean);
-const COLOR_OF_DAY = MOROCCAN_COLORS[Math.floor(Date.now() / 86400000) % MOROCCAN_COLORS.length];
 
 const COLOR_FAMILY_MAP = {
   blue: ["blue", "bleu", "azraq", "cyan", "indigo", "navy", "sky", "cobalt", "majorelle", "turquoise", "azure", "teal", "aqua", "cerulean", "lagoon"],
@@ -240,6 +247,10 @@ function getExpandedSearchGroups(query) {
     const family = Object.values(COLOR_FAMILY_MAP).find((aliases) => aliases.includes(term));
     return family || [term];
   });
+}
+
+function getExpandedSearchTerms(query) {
+  return [...new Set(getExpandedSearchGroups(query).flat())];
 }
 
 function matchesColorSearch(searchableValue, query) {
@@ -529,7 +540,7 @@ const CUSTOM_FAVORITES_KEY = "chicos-custom-favorites";
 const CUSTOM_PALETTE_FAVORITES_KEY = "chicos-custom-palette-favorites";
 const AUTH_TOKEN_KEY = "chicos-auth-token";
 const AUTH_USER_KEY = "chicos-auth-user";
-const API_BASE = "";
+const API_BASE = "https://chicos-colors-api.vercel.app";
 const CITY_PALETTES = [
   { id: "chefchaouen", name: "Chefchaouen Blues", region: "Chefchaouen", context: "Blue-washed medina walls, mountain air, and painted doorways.", tags: ["calm", "tilework", "mountain light"], colors: ["#2F6F91", "#5FAFC4", "#A8D6D1", "#D9E9E2", "#1E4058"] },
   { id: "marrakech", name: "Marrakech Terracotta", region: "Marrakech", context: "Rose city walls, warm dust, and late afternoon courtyard light.", tags: ["sun-baked", "riad", "warm"], colors: ["#B94E35", "#D77A51", "#E8B36D", "#F1D8B2", "#763B32"] },
@@ -554,27 +565,6 @@ function MoroccanPattern({ className = "" }) {
         </pattern>
       </defs>
       <rect width="120" height="120" fill={`url(#${patternId})`} />
-    </svg>
-  );
-}
-
-function BrandMark({ className = "" }) {
-  return (
-    <svg className={className} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-      <path d="M50 3 61 20 80 20 80 39 97 50 80 61 80 80 61 80 50 97 39 80 20 80 20 61 3 50 20 39 20 20 39 20Z" fill="none" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
-      <path d="M50 13 57 26 73 26 73 42 87 50 73 58 73 74 57 74 50 87 43 74 27 74 27 58 13 50 27 42 27 26 43 26Z" fill="none" stroke="currentColor" strokeWidth="1.5" opacity=".55" />
-      <text x="17" y="66" fill="currentColor" fontFamily="Georgia,serif" fontSize="52" fontWeight="600">C</text>
-      <text x="41" y="72" fill="currentColor" fontFamily="Georgia,serif" fontSize="55" fontWeight="600">R</text>
-      <path d="m50 28 3 5-3 5-3-5 3-5Zm0 34 3 5-3 5-3-5 3-5Z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function BrandStar({ className = "" }) {
-  return (
-    <svg className={className} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-      <path d="M50 3 61 20 80 20 80 39 97 50 80 61 80 80 61 80 50 97 39 80 20 80 20 61 3 50 20 39 20 20 39 20Z" fill="none" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
-      <path d="m50 25 25 25-25 25-25-25 25-25Zm0 11L36 50l14 14 14-14-14-14Z" fill="currentColor" fillRule="evenodd" />
     </svg>
   );
 }
@@ -775,7 +765,7 @@ function SearchBar({ query, onChange, placeholder }) {
 
 function ColorCard({ color, isFavorite, onToggle, onCopy, onOpen }) {
   return (
-    <article className="color-card" style={{ backgroundColor: color.hex, "--card-text": getReadableTextColor(color.hex) }}>
+    <article className="color-card" style={{ backgroundColor: color.hex }}>
       <div className="card-top">
         <div>
           <h3 className="color-name">{color.name}</h3>
@@ -960,8 +950,6 @@ function AuthModal({ onClose, onAuthenticated }) {
 function App() {
   const [activeView, setActiveView] = useState("gallery");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isColorsMenuOpen, setIsColorsMenuOpen] = useState(false);
-  const [paletteRegion, setPaletteRegion] = useState("morocco");
   const [galleryQuery, setGalleryQuery] = useState("");
   const [paletteQuery, setPaletteQuery] = useState("");
   const [paletteCategory, setPaletteCategory] = useState("All");
@@ -993,7 +981,6 @@ function App() {
   const [currentUser, setCurrentUser] = useState(() => readStored(AUTH_USER_KEY, null));
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
-  const [isBrandStarCelebrating, setIsBrandStarCelebrating] = useState(false);
   const [theme, setTheme] = useState(() => {
     const storedTheme = readStored("chicos-theme", "");
     if (storedTheme === "light" || storedTheme === "dark") return storedTheme;
@@ -1004,16 +991,6 @@ function App() {
   function navigateTo(view) {
     setActiveView(view);
     setIsMenuOpen(false);
-    setIsColorsMenuOpen(false);
-    const route = { gallery: "top", palettes: "colors", builder: "colors", extract: "extract", assistant: "assistant", patterns: "patterns", about: "about" }[view] || "top";
-    window.history.pushState(null, "", `#${route}`);
-    window.scrollTo({ top: 0, behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-  }
-
-  function openColorCollection(mode, region) {
-    setPaletteMode(mode);
-    setPaletteRegion(region);
-    navigateTo("palettes");
   }
 
   useEffect(() => {
@@ -1365,16 +1342,6 @@ function App() {
     setStatusMessage("PNG palette card downloaded.");
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    })[character]);
-  }
-
   function exportBrandCard(palette, format = "png") {
     const hexes = getPaletteHexes(palette);
     if (format === "png") {
@@ -1411,7 +1378,7 @@ function App() {
       setStatusMessage("Allow pop-ups to export a PDF brand card.");
       return;
     }
-    printWindow.document.write(`<title>${escapeHtml(palette.name || "Chico's Colors")} brand card</title><style>body{margin:0;padding:48px;font-family:Arial,sans-serif;color:#172b31}h1{font-size:36px;margin:0 0 8px}.sub{color:#5e6d72;margin-bottom:32px}.swatches{display:grid;grid-template-columns:repeat(${hexes.length},1fr);gap:12px}.swatch{height:300px;padding:16px;display:flex;align-items:flex-end;font-weight:700;box-sizing:border-box}</style><h1>${escapeHtml(palette.name || "Chico's Colors")}</h1><div class="sub">Brand color card</div><div class="swatches">${hexes.map((hex) => `<div class="swatch" style="background:${hex};color:${getReadableTextColor(hex)}">${hex}</div>`).join("")}</div>`);
+    printWindow.document.write(`<title>${palette.name || "Chico's Colors"} brand card</title><style>body{margin:0;padding:48px;font-family:Arial,sans-serif;color:#172b31}h1{font-size:36px;margin:0 0 8px}.sub{color:#5e6d72;margin-bottom:32px}.swatches{display:grid;grid-template-columns:repeat(${hexes.length},1fr);gap:12px}.swatch{height:300px;padding:16px;display:flex;align-items:flex-end;font-weight:700;box-sizing:border-box}</style><h1>${palette.name || "Chico's Colors"}</h1><div class="sub">Brand color card</div><div class="swatches">${hexes.map((hex) => `<div class="swatch" style="background:${hex};color:${getReadableTextColor(hex)}">${hex}</div>`).join("")}</div>`);
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();
@@ -1481,7 +1448,7 @@ function App() {
           });
         while (colors.length < 5) colors.push(colors[colors.length - 1] || "#D9D9D9");
         setImageName(file.name);
-        setImagePalette({ id: `image-extract-${Date.now()}`, name: "Extracted Palette", colors, description: `Five dominant colors sampled from ${file.name}.` });
+        setImagePalette({ id: "image-extract", name: "Extracted Palette", colors, description: `Five dominant colors sampled from ${file.name}.` });
       };
       image.src = event.target.result;
     };
@@ -1500,13 +1467,12 @@ function App() {
   }, [selectedColor]);
 
   useEffect(() => {
-    if (!isMenuOpen && !isColorsMenuOpen) return undefined;
+    if (!isMenuOpen) return undefined;
 
     function closeMenu(event) {
       if (event.type === "keydown" && event.key !== "Escape") return;
       if (event.type !== "keydown" && headerRef.current?.contains(event.target)) return;
       setIsMenuOpen(false);
-      setIsColorsMenuOpen(false);
     }
 
     document.addEventListener("pointerdown", closeMenu);
@@ -1515,29 +1481,15 @@ function App() {
       document.removeEventListener("pointerdown", closeMenu);
       document.removeEventListener("keydown", closeMenu);
     };
-  }, [isMenuOpen, isColorsMenuOpen]);
-
-  useEffect(() => {
-    function restoreRoute() {
-      const route = window.location.hash.slice(1);
-      setActiveView(({ colors: "palettes", extract: "extract", assistant: "assistant", patterns: "patterns", about: "about" })[route] || "gallery");
-    }
-    window.addEventListener("popstate", restoreRoute);
-    window.addEventListener("hashchange", restoreRoute);
-    restoreRoute();
-    return () => {
-      window.removeEventListener("popstate", restoreRoute);
-      window.removeEventListener("hashchange", restoreRoute);
-    };
-  }, []);
+  }, [isMenuOpen]);
 
   return (
     <div className="app-shell">
       <header className={`site-header${isHeaderScrolled ? " is-scrolled" : ""}`} ref={headerRef}>
         <div className="container nav-row">
-          <a className="brand" href="#top" onClick={(event) => { event.preventDefault(); navigateTo("gallery"); }} aria-label="Chico's Colors home">
-            <BrandMark className="brand-mark" />
-            <span className="brand-name">Chico's Colors</span>
+          <a className="brand" href="#top" onClick={() => navigateTo("gallery")}>
+            <span className="brand-mark">C</span>
+            <span className="brand-name">Chico's <span>Colors</span></span>
           </a>
 
           <button type="button" className="menu-toggle" aria-expanded={isMenuOpen} aria-controls="main-navigation" onClick={() => setIsMenuOpen((isOpen) => !isOpen)}>
@@ -1545,7 +1497,7 @@ function App() {
               <path d="m12 1.5 2.2 5.3 5.3-2.2-2.2 5.3 5.3 2.2-5.3 2.2 2.2 5.3-5.3-2.2-2.2 5.3-2.2-5.3-5.3 2.2 2.2-5.3-5.3-2.2 5.3-2.2-2.2-5.3 5.3 2.2L12 1.5Z" />
               <path d="m12 7.2 1.2 3.6 3.6 1.2-3.6 1.2-1.2 3.6-1.2-3.6-3.6-1.2 3.6-1.2L12 7.2Z" />
             </svg>
-            <span className="sr-only">{isMenuOpen ? "Close navigation menu" : "Open navigation menu"}</span>
+            <span className="sr-only">Open navigation menu</span>
           </button>
 
           <div className="header-actions">
@@ -1558,20 +1510,10 @@ function App() {
 
           <nav id="main-navigation" className={`nav-links ${isMenuOpen ? "is-open" : ""}`} aria-label="Main nav">
             <button type="button" className={`nav-link-btn ${activeView === "gallery" ? "active" : ""}`} onClick={() => navigateTo("gallery")}>Home</button>
-            <div className="nav-dropdown">
-              <button type="button" className={`nav-link-btn colors-trigger ${activeView === "palettes" || activeView === "builder" ? "active" : ""}`} onClick={() => setIsColorsMenuOpen((open) => !open)} aria-haspopup="true" aria-expanded={isColorsMenuOpen} aria-controls="colors-menu">Colors <span aria-hidden="true">⌄</span></button>
-              {isColorsMenuOpen && <div id="colors-menu" className="colors-dropdown-menu" role="group" aria-label="Choose a color collection">
-                <button type="button" onClick={() => openColorCollection("colors", "morocco")}><span>Simple Colors</span><span>Morocco <small lang="ar" dir="rtl">المغرب</small></span></button>
-                <button type="button" onClick={() => openColorCollection("colors", "world")}><span>Simple Colors</span><span>World <small lang="ar" dir="rtl">العالم</small></span></button>
-                <button type="button" onClick={() => openColorCollection("palettes", "morocco")}><span>Palettes</span><span>Morocco <small lang="ar" dir="rtl">المغرب</small></span></button>
-                <button type="button" onClick={() => openColorCollection("palettes", "world")}><span>Palettes</span><span>World <small lang="ar" dir="rtl">العالم</small></span></button>
-                <button type="button" className="harmony-menu-link" onClick={() => navigateTo("builder")}>Harmony Builder <span aria-hidden="true">↗</span></button>
-              </div>}
-            </div>
-            <button type="button" className={`nav-link-btn ${activeView === "extract" ? "active" : ""}`} onClick={() => navigateTo("extract")}>Extract</button>
+            <button type="button" className={`nav-link-btn ${activeView === "palettes" ? "active" : ""}`} onClick={() => navigateTo("palettes")}>Palettes</button>
+            <button type="button" className={`nav-link-btn ${activeView === "builder" ? "active" : ""}`} onClick={() => navigateTo("builder")}>Harmony Builder</button>
+            <button type="button" className={`nav-link-btn ${activeView === "extract" ? "active" : ""}`} onClick={() => navigateTo("extract")}>Extract from Image</button>
             <button type="button" className={`nav-link-btn ${activeView === "assistant" ? "active" : ""}`} onClick={() => navigateTo("assistant")}>AI Assistant</button>
-            <button type="button" className={`nav-link-btn ${activeView === "patterns" ? "active" : ""}`} onClick={() => navigateTo("patterns")}>Patterns</button>
-            <button type="button" className={`nav-link-btn ${activeView === "about" ? "active" : ""}`} onClick={() => navigateTo("about")}>About</button>
           </nav>
           {currentUser ? (
             <button type="button" className="account-btn" onClick={handleLogout} title="Sign out">{currentUser.name} · Sign out</button>
@@ -1584,24 +1526,19 @@ function App() {
       <main>
         {activeView === "gallery" && (
           <>
-            <section className="hero" id="top">
+            <section className="hero">
               <MoroccanPattern className="hero-pattern" />
               <div className="container hero-grid">
                 <div>
-                  <p className="eyebrow">Inspired by Morocco</p>
-                  <h1>Colors carry stories. <em>Morocco has thousands.</em></h1>
+                  <p className="eyebrow">Moroccan color stories</p>
+                  <h1>Discover colors <em>inspired by Morocco.</em></h1>
                   <p className="hero-copy">
-                    A modern color library shaped by Moroccan light, material, and making. Find a shade, build a palette, and carry its character into your next design.
+                    Discover rich palettes shaped by Moroccan landscapes, artisan craft, and timeless color stories, translated into a precise modern toolkit for digital design.
                   </p>
                   <div className="cta-row">
-                    <button type="button" className="primary-btn" onClick={() => openColorCollection("colors", "morocco")}>Explore the colors <span aria-hidden="true">→</span></button>
-                    <button type="button" className="secondary-btn" onClick={() => navigateTo("extract")}>Extract from an image</button>
+                    <button type="button" className="primary-btn" onClick={() => setActiveView("palettes")}>Explore palettes</button>
+                    <button type="button" className="secondary-btn" onClick={() => setActiveView("builder")}>Create harmony</button>
                   </div>
-                  <button type="button" className="color-day" onClick={() => setSelectedColor(COLOR_OF_DAY)} aria-label={`Color of the day: ${COLOR_OF_DAY.name}, ${COLOR_OF_DAY.hex}. Open details`}>
-                    <span className="color-day-swatch" style={{ backgroundColor: COLOR_OF_DAY.hex }} aria-hidden="true"></span>
-                    <span className="color-day-copy"><small>Color of the day</small><strong>{COLOR_OF_DAY.name}</strong><span>{COLOR_OF_DAY.location}</span></span>
-                    <span className="color-day-hex">{COLOR_OF_DAY.hex}</span>
-                  </button>
                   <div className="stats">
                     <div className="stat-box">
                       <strong>{FEATURED_COLORS.length}</strong>
@@ -1618,9 +1555,12 @@ function App() {
                   </div>
                 </div>
 
-                <div className="hero-visual">
-                  <img src="/assets/Gemini_Generated_Image_adxgv3adxgv3adxg.webp" alt="Chico's Colors full logo in deep green and bronze, Inspired by Morocco" width="1000" height="1000" fetchPriority="high" />
-                  <span className="hero-visual-caption"><BrandStar /> Materials, light, and line</span>
+                <div className="hero-panel" aria-label="Featured palette preview">
+                  <div className="panel-grid">
+                    {COLOR_LIBRARY.slice(0, 5).map((color) => (
+                      <div key={color.id} className="panel-swatch" style={{ backgroundColor: color.hex }} title={`${color.name}: ${color.hex}`} />
+                    ))}
+                  </div>
                 </div>
               </div>
             </section>
@@ -1723,18 +1663,6 @@ function App() {
                 ))}
               </div>
             </section>
-
-            <section className="home-tool-previews" aria-label="Explore the studio">
-              <div className="container">
-                <div className="section-heading"><div><p className="eyebrow">A color practice</p><h2>From reference to repeatable system</h2></div><span className="section-meta">Four ways in</span></div>
-                <div className="home-tool-grid">
-                  <button type="button" onClick={() => openColorCollection("colors", "morocco")}><span>01</span><strong>Colors</strong><small>Browse shades from Morocco and beyond.</small><b aria-hidden="true">↗</b></button>
-                  <button type="button" onClick={() => navigateTo("extract")}><span>02</span><strong>Extract</strong><small>Read a five-color study from your image.</small><b aria-hidden="true">↗</b></button>
-                  <button type="button" onClick={() => navigateTo("assistant")}><span>03</span><strong>AI Assistant</strong><small>Turn a mood or place into a palette brief.</small><b aria-hidden="true">↗</b></button>
-                  <button type="button" onClick={() => navigateTo("patterns")}><span>04</span><strong>Pattern Lab</strong><small>Build a repeat from zellige geometry.</small><b aria-hidden="true">↗</b></button>
-                </div>
-              </div>
-            </section>
           </>
         )}
 
@@ -1834,13 +1762,12 @@ function App() {
                         <button type="button" className="copy-btn" onClick={() => copyPaletteHexes(palette)}>Copy All Hex Codes</button>
                         <label className="export-control">
                           <span>Export</span>
-                          <select defaultValue="" onChange={(event) => { const format = event.target.value; if (format === "png") exportBrandCard(palette, "png"); else if (format) exportPalette(palette, format); event.target.value = ""; }} aria-label={`Export ${palette.name}`}>
-                            <option value="" disabled>Design export</option>
+                          <select defaultValue="" onChange={(event) => { exportPalette(palette, event.target.value); event.target.value = ""; }} aria-label={`Export ${palette.name}`}>
+                            <option value="" disabled>Choose format</option>
+                            <option value="hex">HEX array</option>
                             <option value="tailwind">Tailwind CSS Config</option>
                             <option value="figma">Figma JSON Tokens</option>
                             <option value="css-root">CSS Root Variables</option>
-                            <option value="json">JSON</option>
-                            <option value="png">PNG image</option>
                           </select>
                         </label>
                       </div>
@@ -1964,11 +1891,11 @@ function App() {
                   </div>
                   <div className="harmony-swatch-row">
                     {simulatedHarmonyColors.map((colorHex, index) => (
-                      <div key={`${colorHex}-${index}`} className={`harmony-swatch${lockedHarmonyColors[index] ? " is-locked" : ""}`} style={{ backgroundColor: colorHex }}>
+                      <div key={`${colorHex}-${index}`} className={`harmony-swatch${lockedHarmonyColors[index] ? " is-locked" : ""}`} role="button" tabIndex="0" style={{ backgroundColor: colorHex }} onClick={() => toggleHarmonyLock(index)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggleHarmonyLock(index); } }} title={`${colorHex} - ${lockedHarmonyColors[index] ? "Locked" : "Click to lock"}`} aria-label={`${lockedHarmonyColors[index] ? "Unlock" : "Lock"} harmony color ${index + 1}`}>
                         <span className="harmony-label">{index + 1}</span>
                         <span className="harmony-hex-label">{colorHex}</span>
-                        <button type="button" className="harmony-lock" onClick={() => toggleHarmonyLock(index)} aria-pressed={Boolean(lockedHarmonyColors[index])} aria-label={`${lockedHarmonyColors[index] ? "Unlock" : "Lock"} harmony color ${index + 1}`}>{lockedHarmonyColors[index] ? "LOCKED" : "LOCK"}</button>
-                        <button type="button" className={`harmony-favorite${customFavorites.some((favorite) => favorite.id === `harmony-${colorHex.slice(1).toLowerCase()}`) ? " is-active" : ""}`} onClick={() => toggleCustomFavorite(colorHex, `${harmonyRule} color ${index + 1}`)} aria-label={`Save harmony color ${index + 1}`}>♥</button>
+                        <span className="harmony-lock">{lockedHarmonyColors[index] ? "LOCKED" : "LOCK"}</span>
+                        <button type="button" className={`harmony-favorite${customFavorites.some((favorite) => favorite.id === `harmony-${colorHex.slice(1).toLowerCase()}`) ? " is-active" : ""}`} onClick={(event) => { event.stopPropagation(); toggleCustomFavorite(colorHex, `${harmonyRule} color ${index + 1}`); }} aria-label="Save generated harmony color">♥</button>
                       </div>
                     ))}
                   </div>
@@ -2029,8 +1956,7 @@ function App() {
                     <div><p className="eyebrow">Extracted result</p><h3>{imagePalette.name}</h3></div>
                     <label className="export-control"><span>Export</span><select defaultValue="" onChange={(event) => { exportPalette(imagePalette, event.target.value); event.target.value = ""; }} aria-label="Export extracted palette"><option value="" disabled>Choose format</option><option value="hex">HEX array</option><option value="tailwind">Tailwind CSS Config</option><option value="figma">Figma JSON Tokens</option><option value="css-root">CSS Root Variables</option></select></label>
                   </div>
-                  <div className="extracted-swatches">{imagePalette.colors.map((hex) => <button key={hex} type="button" title={`${hex} - Click to copy`} onClick={() => copyColorHex({ id: `extract-${hex}`, name: "Extracted color", hex })} style={{ backgroundColor: hex }}><span>{hex}</span>{copiedColorId === `extract-${hex}` && <span className="swatch-feedback">Copied!</span>}
-                    </button>)}</div>
+                  <div className="extracted-swatches">{imagePalette.colors.map((hex) => <button key={hex} type="button" title={`${hex} - Click to copy`} onClick={() => copyColorHex({ id: `extract-${hex}`, name: "Extracted color", hex })} style={{ backgroundColor: hex }}><span>{hex}</span>{copiedColorId === `extract-${hex}` && <span className="swatch-feedback">Copied!</span>}</button>)}</div>
                   <button type="button" className="primary-btn extracted-save-btn" onClick={saveExtractedPalette}>{customPaletteFavorites.some((favorite) => favorite.id === imagePalette.id) ? "Saved to Favorites" : "Save Extracted Palette to Favorites"}</button>
                 </article>
               )}
@@ -2098,22 +2024,7 @@ function App() {
 
       <footer className="site-footer">
         <MoroccanPattern className="footer-pattern" />
-        <div className="container footer-content">
-          <a className="footer-brand-lockup" href="#top" onClick={(event) => { event.preventDefault(); navigateTo("gallery"); }}>
-            <BrandMark className="footer-brand-mark" />
-            <span><strong>Chico's Colors</strong><small>Inspired by Morocco</small></span>
-          </a>
-          <nav className="footer-links" aria-label="Footer navigation">
-            <button type="button" onClick={() => navigateTo("palettes")}>Colors</button>
-            <button type="button" onClick={() => navigateTo("extract")}>Extract</button>
-            <button type="button" onClick={() => navigateTo("assistant")}>AI Assistant</button>
-            <button type="button" onClick={() => navigateTo("patterns")}>Patterns</button>
-            <button type="button" onClick={() => navigateTo("about")}>About</button>
-          </nav>
-          <div className="footer-socials"><a href="#about" onClick={(event) => { event.preventDefault(); navigateTo("about"); }}>Instagram</a><a href="mailto:hello@example.com">Contact</a></div>
-          <small className="footer-copyright">© {new Date().getFullYear()} Chico's Colors</small>
-          <button type="button" className={`footer-star${isBrandStarCelebrating ? " is-celebrating" : ""}`} onClick={() => { setIsBrandStarCelebrating(true); setStatusMessage("A small star for your next color story."); window.setTimeout(() => setIsBrandStarCelebrating(false), 900); }} aria-label="Reveal a small brand surprise"><BrandStar /></button>
-        </div>
+        <div className="container"><strong>Chico's Colors</strong><span>Moroccan-inspired color discovery</span><small>Made with care in Morocco · Built for curious eyes</small></div>
       </footer>
     </div>
   );
