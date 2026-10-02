@@ -557,6 +557,27 @@ function MoroccanPattern({ className = "" }) {
   );
 }
 
+function BrandMark({ className = "" }) {
+  return (
+    <svg className={className} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <path d="M50 3 61 20 80 20 80 39 97 50 80 61 80 80 61 80 50 97 39 80 20 80 20 61 3 50 20 39 20 20 39 20Z" fill="none" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M50 13 57 26 73 26 73 42 87 50 73 58 73 74 57 74 50 87 43 74 27 74 27 58 13 50 27 42 27 26 43 26Z" fill="none" stroke="currentColor" strokeWidth="1.5" opacity=".55" />
+      <text x="17" y="66" fill="currentColor" fontFamily="Georgia,serif" fontSize="52" fontWeight="600">C</text>
+      <text x="41" y="72" fill="currentColor" fontFamily="Georgia,serif" fontSize="55" fontWeight="600">R</text>
+      <path d="m50 28 3 5-3 5-3-5 3-5Zm0 34 3 5-3 5-3-5 3-5Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function BrandStar({ className = "" }) {
+  return (
+    <svg className={className} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <path d="M50 3 61 20 80 20 80 39 97 50 80 61 80 80 61 80 50 97 39 80 20 80 20 61 3 50 20 39 20 20 39 20Z" fill="none" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
+      <path d="m50 25 25 25-25 25-25-25 25-25Zm0 11L36 50l14 14 14-14-14-14Z" fill="currentColor" fillRule="evenodd" />
+    </svg>
+  );
+}
+
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 function readStored(key, fallback = []) {
@@ -938,6 +959,8 @@ function AuthModal({ onClose, onAuthenticated }) {
 function App() {
   const [activeView, setActiveView] = useState("gallery");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isColorsMenuOpen, setIsColorsMenuOpen] = useState(false);
+  const [paletteRegion, setPaletteRegion] = useState("morocco");
   const [galleryQuery, setGalleryQuery] = useState("");
   const [paletteQuery, setPaletteQuery] = useState("");
   const [paletteCategory, setPaletteCategory] = useState("All");
@@ -969,6 +992,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(() => readStored(AUTH_USER_KEY, null));
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
+  const [isBrandStarCelebrating, setIsBrandStarCelebrating] = useState(false);
   const [theme, setTheme] = useState(() => {
     const storedTheme = readStored("chicos-theme", "");
     if (storedTheme === "light" || storedTheme === "dark") return storedTheme;
@@ -979,6 +1003,16 @@ function App() {
   function navigateTo(view) {
     setActiveView(view);
     setIsMenuOpen(false);
+    setIsColorsMenuOpen(false);
+    const route = { gallery: "top", palettes: "colors", builder: "colors", extract: "extract", assistant: "assistant", patterns: "patterns", about: "about" }[view] || "top";
+    window.history.pushState(null, "", `#${route}`);
+    window.scrollTo({ top: 0, behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }
+
+  function openColorCollection(mode, region) {
+    setPaletteMode(mode);
+    setPaletteRegion(region);
+    navigateTo("palettes");
   }
 
   useEffect(() => {
@@ -1465,12 +1499,13 @@ function App() {
   }, [selectedColor]);
 
   useEffect(() => {
-    if (!isMenuOpen) return undefined;
+    if (!isMenuOpen && !isColorsMenuOpen) return undefined;
 
     function closeMenu(event) {
       if (event.type === "keydown" && event.key !== "Escape") return;
       if (event.type !== "keydown" && headerRef.current?.contains(event.target)) return;
       setIsMenuOpen(false);
+      setIsColorsMenuOpen(false);
     }
 
     document.addEventListener("pointerdown", closeMenu);
@@ -1479,15 +1514,29 @@ function App() {
       document.removeEventListener("pointerdown", closeMenu);
       document.removeEventListener("keydown", closeMenu);
     };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isColorsMenuOpen]);
+
+  useEffect(() => {
+    function restoreRoute() {
+      const route = window.location.hash.slice(1);
+      setActiveView(({ colors: "palettes", extract: "extract", assistant: "assistant", patterns: "patterns", about: "about" })[route] || "gallery");
+    }
+    window.addEventListener("popstate", restoreRoute);
+    window.addEventListener("hashchange", restoreRoute);
+    restoreRoute();
+    return () => {
+      window.removeEventListener("popstate", restoreRoute);
+      window.removeEventListener("hashchange", restoreRoute);
+    };
+  }, []);
 
   return (
     <div className="app-shell">
       <header className={`site-header${isHeaderScrolled ? " is-scrolled" : ""}`} ref={headerRef}>
         <div className="container nav-row">
-          <a className="brand" href="#top" onClick={() => navigateTo("gallery")}>
-            <span className="brand-mark">C</span>
-            <span className="brand-name">Chico's <span>Colors</span></span>
+          <a className="brand" href="#top" onClick={(event) => { event.preventDefault(); navigateTo("gallery"); }} aria-label="Chico's Colors home">
+            <BrandMark className="brand-mark" />
+            <span className="brand-name">Chico's Colors</span>
           </a>
 
           <button type="button" className="menu-toggle" aria-expanded={isMenuOpen} aria-controls="main-navigation" onClick={() => setIsMenuOpen((isOpen) => !isOpen)}>
@@ -1495,7 +1544,7 @@ function App() {
               <path d="m12 1.5 2.2 5.3 5.3-2.2-2.2 5.3 5.3 2.2-5.3 2.2 2.2 5.3-5.3-2.2-2.2 5.3-2.2-5.3-5.3 2.2 2.2-5.3-5.3-2.2 5.3-2.2-2.2-5.3 5.3 2.2L12 1.5Z" />
               <path d="m12 7.2 1.2 3.6 3.6 1.2-3.6 1.2-1.2 3.6-1.2-3.6-3.6-1.2 3.6-1.2L12 7.2Z" />
             </svg>
-            <span className="sr-only">Open navigation menu</span>
+            <span className="sr-only">{isMenuOpen ? "Close navigation menu" : "Open navigation menu"}</span>
           </button>
 
           <div className="header-actions">
@@ -1508,10 +1557,20 @@ function App() {
 
           <nav id="main-navigation" className={`nav-links ${isMenuOpen ? "is-open" : ""}`} aria-label="Main nav">
             <button type="button" className={`nav-link-btn ${activeView === "gallery" ? "active" : ""}`} onClick={() => navigateTo("gallery")}>Home</button>
-            <button type="button" className={`nav-link-btn ${activeView === "palettes" ? "active" : ""}`} onClick={() => navigateTo("palettes")}>Palettes</button>
-            <button type="button" className={`nav-link-btn ${activeView === "builder" ? "active" : ""}`} onClick={() => navigateTo("builder")}>Harmony Builder</button>
-            <button type="button" className={`nav-link-btn ${activeView === "extract" ? "active" : ""}`} onClick={() => navigateTo("extract")}>Extract from Image</button>
+            <div className="nav-dropdown">
+              <button type="button" className={`nav-link-btn colors-trigger ${activeView === "palettes" || activeView === "builder" ? "active" : ""}`} onClick={() => setIsColorsMenuOpen((open) => !open)} aria-haspopup="true" aria-expanded={isColorsMenuOpen} aria-controls="colors-menu">Colors <span aria-hidden="true">⌄</span></button>
+              {isColorsMenuOpen && <div id="colors-menu" className="colors-dropdown-menu" role="group" aria-label="Choose a color collection">
+                <button type="button" onClick={() => openColorCollection("colors", "morocco")}><span>Simple Colors</span><span>Morocco <small lang="ar" dir="rtl">المغرب</small></span></button>
+                <button type="button" onClick={() => openColorCollection("colors", "world")}><span>Simple Colors</span><span>World <small lang="ar" dir="rtl">العالم</small></span></button>
+                <button type="button" onClick={() => openColorCollection("palettes", "morocco")}><span>Palettes</span><span>Morocco <small lang="ar" dir="rtl">المغرب</small></span></button>
+                <button type="button" onClick={() => openColorCollection("palettes", "world")}><span>Palettes</span><span>World <small lang="ar" dir="rtl">العالم</small></span></button>
+                <button type="button" className="harmony-menu-link" onClick={() => navigateTo("builder")}>Harmony Builder <span aria-hidden="true">↗</span></button>
+              </div>}
+            </div>
+            <button type="button" className={`nav-link-btn ${activeView === "extract" ? "active" : ""}`} onClick={() => navigateTo("extract")}>Extract</button>
             <button type="button" className={`nav-link-btn ${activeView === "assistant" ? "active" : ""}`} onClick={() => navigateTo("assistant")}>AI Assistant</button>
+            <button type="button" className={`nav-link-btn ${activeView === "patterns" ? "active" : ""}`} onClick={() => navigateTo("patterns")}>Patterns</button>
+            <button type="button" className={`nav-link-btn ${activeView === "about" ? "active" : ""}`} onClick={() => navigateTo("about")}>About</button>
           </nav>
           {currentUser ? (
             <button type="button" className="account-btn" onClick={handleLogout} title="Sign out">{currentUser.name} · Sign out</button>
@@ -2026,7 +2085,22 @@ function App() {
 
       <footer className="site-footer">
         <MoroccanPattern className="footer-pattern" />
-        <div className="container"><strong>Chico's Colors</strong><span>Moroccan-inspired color discovery</span><small>Made with care in Morocco · Built for curious eyes</small></div>
+        <div className="container footer-content">
+          <a className="footer-brand-lockup" href="#top" onClick={(event) => { event.preventDefault(); navigateTo("gallery"); }}>
+            <BrandMark className="footer-brand-mark" />
+            <span><strong>Chico's Colors</strong><small>Inspired by Morocco</small></span>
+          </a>
+          <nav className="footer-links" aria-label="Footer navigation">
+            <button type="button" onClick={() => navigateTo("palettes")}>Colors</button>
+            <button type="button" onClick={() => navigateTo("extract")}>Extract</button>
+            <button type="button" onClick={() => navigateTo("assistant")}>AI Assistant</button>
+            <button type="button" onClick={() => navigateTo("patterns")}>Patterns</button>
+            <button type="button" onClick={() => navigateTo("about")}>About</button>
+          </nav>
+          <div className="footer-socials"><a href="#about" onClick={(event) => { event.preventDefault(); navigateTo("about"); }}>Instagram</a><a href="mailto:hello@example.com">Contact</a></div>
+          <small className="footer-copyright">© {new Date().getFullYear()} Chico's Colors</small>
+          <button type="button" className={`footer-star${isBrandStarCelebrating ? " is-celebrating" : ""}`} onClick={() => { setIsBrandStarCelebrating(true); setStatusMessage("A small star for your next color story."); window.setTimeout(() => setIsBrandStarCelebrating(false), 900); }} aria-label="Reveal a small brand surprise"><BrandStar /></button>
+        </div>
       </footer>
     </div>
   );
